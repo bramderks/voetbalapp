@@ -12,6 +12,9 @@
     "migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.18.0",
     "next": "14.2.15",

@@ -11,23 +11,15 @@ async function main() {
 
   const team = await prisma.team.create({
     data: {
-      name: 'FC Utrecht Academy',
+      name: 'SCE JO8-1',
     },
   });
 
   const players = [
-    'Milan',
-    'Noah',
-    'Daan',
-    'Jesse',
-    'Timo',
-    'Luca',
-    'Sam',
-    'Yusuf',
-    'Niels',
-    'Rens',
+    'Tobi',
     'Sem',
-    'Jordi',
+    'Milan',
+    'Lucas',
   ];
 
   for (const playerName of players) {
