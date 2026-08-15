@@ -67,7 +67,7 @@ async function main() {
   await prisma.activity.create({
     data: {
       date: matchDate,
-      type: ActivityType.MATCH,
+      type: 'MATCH',
       startTime: '18:30',
       endTime: '19:45',
       opponent: 'SV De Meern',
