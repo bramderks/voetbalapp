@@ -1,6 +1,4 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
 import { formatDate, getNextActivity, getStatusText } from '@/lib/utils';
 
 export default async function HomePage() {

@@ -1,4 +1,3 @@
-import { prisma } from '@/lib/prisma';
 import { buildStats } from '@/lib/utils';
 
 export default async function StatistiekenPage() {
