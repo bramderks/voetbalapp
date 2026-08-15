@@ -2,6 +2,19 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Helper function to format date as YYYY-MM-DD
+function formatDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Helper function to format time as HH:mm
+function formatTime(hours: number, minutes: number = 0): string {
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
 async function main() {
   const existingTeam = await prisma.team.findFirst();
   if (existingTeam) {
@@ -31,35 +44,56 @@ async function main() {
     });
   }
 
-  // Eerste training: woensdag 26 augustus 2026, 15:00–16:00
-  const trainingDate = '2026-08-26';
-  const training = await prisma.activity.create({
-    data: {
-      date: trainingDate,
-      type: 'TRAINING',
-      startTime: '15:00',
-      endTime: '16:00',
-      opponent: null,
-      location: null,
-      status: 'OPEN',
-    },
-  });
+  // Generate season 2026-2027
+  // Trainings: every Wednesday from 26 Aug 2026 to 31 May 2027
+  // Matches: every Saturday from 24 Aug 2026 to 29 May 2027
 
-  // Eerste wedstrijd: zaterdag 29 augustus 2026
-  const matchDate = '2026-08-29';
-  const match = await prisma.activity.create({
-    data: {
-      date: matchDate,
-      type: 'MATCH',
-      startTime: '10:00',
-      endTime: '11:15',
-      opponent: null,
-      location: null,
-      status: 'OPEN',
-    },
-  });
+  const seasonStart = new Date(2026, 7, 24); // 24 August 2026 (Saturday)
+  const seasonEnd = new Date(2027, 4, 31); // End of May 2027
 
-  console.log('Database seeded with team, players, and activities.');
+  // Generate all Wednesdays (trainings)
+  let currentTrainingDate = new Date(2026, 7, 26); // First Wednesday: 26 August 2026
+  while (currentTrainingDate <= seasonEnd) {
+    if (currentTrainingDate.getDay() === 3) { // Wednesday = 3
+      const dateStr = formatDate(currentTrainingDate);
+      await prisma.activity.create({
+        data: {
+          date: dateStr,
+          type: 'TRAINING',
+          startTime: formatTime(15),
+          endTime: formatTime(16),
+          opponent: null,
+          location: null,
+          status: 'OPEN',
+        },
+      });
+    }
+    currentTrainingDate.setDate(currentTrainingDate.getDate() + 1);
+  }
+
+  // Generate all Saturdays (matches)
+  let currentMatchDate = new Date(2026, 7, 24); // First Saturday: 24 August 2026
+  while (currentMatchDate <= seasonEnd) {
+    if (currentMatchDate.getDay() === 6) { // Saturday = 6
+      const dateStr = formatDate(currentMatchDate);
+      await prisma.activity.create({
+        data: {
+          date: dateStr,
+          type: 'MATCH',
+          startTime: formatTime(10),
+          endTime: formatTime(11, 15),
+          opponent: null,
+          location: null,
+          status: 'OPEN',
+        },
+      });
+    }
+    currentMatchDate.setDate(currentMatchDate.getDate() + 1);
+  }
+
+  const trainingCount = await prisma.activity.count({ where: { type: 'TRAINING' } });
+  const matchCount = await prisma.activity.count({ where: { type: 'MATCH' } });
+  console.log(`Database seeded: ${trainingCount} trainings, ${matchCount} matches, 4 players in team SCE JO8-1.`);
 }
 
 main()
