@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function TrainingRegistrationPage() {
+function TrainingRegistrationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activityId = Number(searchParams.get('id') ?? 0);
@@ -94,5 +94,13 @@ export default function TrainingRegistrationPage() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function TrainingRegistrationPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-md p-4 text-center">Laden...</main>}>
+      <TrainingRegistrationContent />
+    </Suspense>
   );
 }

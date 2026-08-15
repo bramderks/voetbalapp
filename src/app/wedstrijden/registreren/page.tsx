@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function MatchRegistrationPage() {
+function MatchRegistrationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activityId = Number(searchParams.get('id') ?? 0);
@@ -147,5 +147,13 @@ export default function MatchRegistrationPage() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function MatchRegistrationPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-md p-4 text-center">Laden...</main>}>
+      <MatchRegistrationContent />
+    </Suspense>
   );
 }
