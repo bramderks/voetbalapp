@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { formatDate, getNextActivity, getStatusText } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const nextActivity = await getNextActivity();
 

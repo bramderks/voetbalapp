@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export default async function WedstrijdenPage() {
   const matches = await prisma.activity.findMany({
     where: { type: 'MATCH' },

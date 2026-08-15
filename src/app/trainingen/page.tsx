@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { formatDate, getStatusText } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TrainingenPage() {
   const trainings = await prisma.activity.findMany({
     where: { type: 'TRAINING' },
