@@ -18,7 +18,10 @@ export default async function HomePage() {
         <p className="text-sm font-medium text-emerald-700">Volgende activiteit</p>
         {nextActivity ? (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900">{nextActivity.type === 'TRAINING' ? 'Training' : 'Wedstrijd'}</h2>
+            <h2 className="mt-3 flex items-center gap-2 text-xl font-bold text-slate-900">
+              <span className="text-2xl">{nextActivity.type === 'TRAINING' ? '🏋️' : '⚽'}</span>
+              {nextActivity.type === 'TRAINING' ? 'Training' : 'Wedstrijd'}
+            </h2>
             <p className="mt-1 text-sm text-slate-700">{formatDate(nextActivity.date)}</p>
             <p className="mt-2 text-sm text-slate-700">
               {nextActivity.startTime} - {nextActivity.endTime}
@@ -34,10 +37,10 @@ export default async function HomePage() {
       </Card>
 
       <nav className="grid grid-cols-2 gap-3">
-        <NavButton href="/trainingen" label="Trainingen" color="bg-slate-900" />
-        <NavButton href="/wedstrijden" label="Wedstrijden" color="bg-emerald-600" />
-        <NavButton href="/spelers" label="Spelers" color="bg-amber-500" />
-        <NavButton href="/statistieken" label="Statistieken" color="bg-sky-600" />
+        <NavButton href="/trainingen" label="Trainingen" color="bg-slate-900" icon="🏋️" />
+        <NavButton href="/wedstrijden" label="Wedstrijden" color="bg-emerald-600" icon="⚽" />
+        <NavButton href="/spelers" label="Spelers" color="bg-amber-500" icon="👥" />
+        <NavButton href="/statistieken" label="Statistieken" color="bg-sky-600" icon="📊" />
       </nav>
     </main>
   );

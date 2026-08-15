@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
+import { Card } from '@/components/Card';
+import { PageHeader } from '@/components/PageHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,19 +14,11 @@ export default async function WedstrijdenPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
-      <header className="mb-5 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Wedstrijden</p>
-          <h1 className="text-2xl font-bold text-slate-900">Overzicht</h1>
-        </div>
-        <Link href="/" className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700">
-          Home
-        </Link>
-      </header>
+      <PageHeader eyebrow="Wedstrijden" title="Overzicht" icon="⚽" />
 
       <div className="space-y-3">
         {matches.map((match) => (
-          <div key={match.id} className="card">
+          <Card key={match.id}>
             <p className="text-lg font-bold text-slate-900">{match.opponent ?? 'Tegenstander TBD'}</p>
             <p className="mt-1 text-sm text-slate-600">{formatDate(match.date)}</p>
             <p className="mt-1 text-sm text-slate-600">{match.location ?? 'Locatie TBD'}</p>
@@ -37,7 +31,7 @@ export default async function WedstrijdenPage() {
                 Bewerken
               </Link>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </main>

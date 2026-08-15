@@ -15,7 +15,7 @@ export default async function TrainingenPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
-      <PageHeader eyebrow="Trainingen" title="Overzicht" />
+      <PageHeader eyebrow="Trainingen" title="Overzicht" icon="🏋️" />
 
       <div className="space-y-3">
         {trainings.map((training) => (

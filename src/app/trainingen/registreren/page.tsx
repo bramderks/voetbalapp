@@ -67,9 +67,12 @@ function TrainingRegistrationContent() {
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
-      <header className="mb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Training registreren</p>
-        <h1 className="text-2xl font-bold text-slate-900">{new Date(activity.date).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h1>
+      <header className="mb-5 flex items-center gap-2">
+        <span className="text-2xl leading-none">🏋️</span>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Training registreren</p>
+          <h1 className="text-2xl font-bold text-slate-900">{new Date(activity.date).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h1>
+        </div>
       </header>
 
       <div className="space-y-4">
@@ -78,12 +81,12 @@ function TrainingRegistrationContent() {
             <span className="font-medium text-slate-800">{player.name}</span>
             <div className="flex gap-2">
               <label className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
-                <input type="radio" name={`present-${player.id}`} value="true" defaultChecked />
-                Aanwezig
+                <input type="radio" name={`present-${player.id}`} value="true" />
+                🟢 Aanwezig
               </label>
               <label className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
-                <input type="radio" name={`present-${player.id}`} value="false" />
-                Afwezig
+                <input type="radio" name={`present-${player.id}`} value="false" defaultChecked />
+                🔴 Afwezig
               </label>
             </div>
           </div>

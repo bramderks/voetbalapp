@@ -39,7 +39,7 @@ model Attendance {
   id         Int      @id @default(autoincrement())
   activityId Int
   playerId   Int
-  present    Boolean
+  present    Boolean  @default(false)
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 }

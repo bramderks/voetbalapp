@@ -30,9 +30,13 @@ async function main() {
 
   const players = [
     'Tobi',
-    'Sem',
-    'Milan',
-    'Lucas',
+    'Joa',
+    'Muad',
+    'Moussa',
+    'Eymen',
+    'Jamie',
+    'Romy',
+    'Mahmoud',
   ];
 
   for (const playerName of players) {
@@ -93,7 +97,7 @@ async function main() {
 
   const trainingCount = await prisma.activity.count({ where: { type: 'TRAINING' } });
   const matchCount = await prisma.activity.count({ where: { type: 'MATCH' } });
-  console.log(`Database seeded: ${trainingCount} trainings, ${matchCount} matches, 4 players in team SCE JO8-1.`);
+  console.log(`Database seeded: ${trainingCount} trainings, ${matchCount} matches, ${players.length} players in team SCE JO8-1.`);
 }
 
 main()
