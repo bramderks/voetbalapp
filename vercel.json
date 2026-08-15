@@ -1,5 +1,3 @@
 {
-  "version": 2,
-  "buildCommand": "npm install && npx prisma generate && npm run build",
-  "outputDirectory": ".next"
+  "version": 2
 }
