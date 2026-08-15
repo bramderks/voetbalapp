@@ -10,6 +10,8 @@
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "db:import": "tsx scripts/import-postgres-data.ts",
     "prisma:studio": "prisma studio"
   },
   "prisma": {

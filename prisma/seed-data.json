@@ -1,0 +1,854 @@
+{
+  "teams": [
+    {
+      "id": 1,
+      "name": "SCE JO8-1"
+    }
+  ],
+  "players": [
+    {
+      "id": 1,
+      "name": "Tobi",
+      "teamId": 1
+    },
+    {
+      "id": 2,
+      "name": "Joa",
+      "teamId": 1
+    },
+    {
+      "id": 3,
+      "name": "Muad",
+      "teamId": 1
+    },
+    {
+      "id": 4,
+      "name": "Moussa",
+      "teamId": 1
+    },
+    {
+      "id": 5,
+      "name": "Eymen",
+      "teamId": 1
+    },
+    {
+      "id": 6,
+      "name": "Jamie",
+      "teamId": 1
+    },
+    {
+      "id": 7,
+      "name": "Romy",
+      "teamId": 1
+    },
+    {
+      "id": 8,
+      "name": "Mahmoud",
+      "teamId": 1
+    }
+  ],
+  "activities": [
+    {
+      "id": 1,
+      "date": "2026-08-26",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 2,
+      "date": "2026-09-02",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 3,
+      "date": "2026-09-09",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 4,
+      "date": "2026-09-16",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 5,
+      "date": "2026-09-23",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 6,
+      "date": "2026-09-30",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 7,
+      "date": "2026-10-07",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 8,
+      "date": "2026-10-14",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 9,
+      "date": "2026-10-21",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 10,
+      "date": "2026-10-28",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 11,
+      "date": "2026-11-04",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 12,
+      "date": "2026-11-11",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 13,
+      "date": "2026-11-18",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 14,
+      "date": "2026-11-25",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 15,
+      "date": "2026-12-02",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 16,
+      "date": "2026-12-09",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 17,
+      "date": "2026-12-16",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 18,
+      "date": "2026-12-23",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 19,
+      "date": "2026-12-30",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 20,
+      "date": "2027-01-06",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 21,
+      "date": "2027-01-13",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 22,
+      "date": "2027-01-20",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 23,
+      "date": "2027-01-27",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 24,
+      "date": "2027-02-03",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 25,
+      "date": "2027-02-10",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 26,
+      "date": "2027-02-17",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 27,
+      "date": "2027-02-24",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 28,
+      "date": "2027-03-03",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 29,
+      "date": "2027-03-10",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 30,
+      "date": "2027-03-17",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 31,
+      "date": "2027-03-24",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 32,
+      "date": "2027-03-31",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 33,
+      "date": "2027-04-07",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 34,
+      "date": "2027-04-14",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 35,
+      "date": "2027-04-21",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 36,
+      "date": "2027-04-28",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 37,
+      "date": "2027-05-05",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 38,
+      "date": "2027-05-12",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 39,
+      "date": "2027-05-19",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 40,
+      "date": "2027-05-26",
+      "type": "TRAINING",
+      "startTime": "15:00",
+      "endTime": "16:00",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 41,
+      "date": "2026-08-29",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 42,
+      "date": "2026-09-05",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 43,
+      "date": "2026-09-12",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 44,
+      "date": "2026-09-19",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 45,
+      "date": "2026-09-26",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 46,
+      "date": "2026-10-03",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 47,
+      "date": "2026-10-10",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 48,
+      "date": "2026-10-17",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 49,
+      "date": "2026-10-24",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 50,
+      "date": "2026-10-31",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 51,
+      "date": "2026-11-07",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 52,
+      "date": "2026-11-14",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 53,
+      "date": "2026-11-21",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 54,
+      "date": "2026-11-28",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 55,
+      "date": "2026-12-05",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 56,
+      "date": "2026-12-12",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 57,
+      "date": "2026-12-19",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 58,
+      "date": "2026-12-26",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 59,
+      "date": "2027-01-02",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 60,
+      "date": "2027-01-09",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 61,
+      "date": "2027-01-16",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 62,
+      "date": "2027-01-23",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 63,
+      "date": "2027-01-30",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 64,
+      "date": "2027-02-06",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 65,
+      "date": "2027-02-13",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 66,
+      "date": "2027-02-20",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 67,
+      "date": "2027-02-27",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 68,
+      "date": "2027-03-06",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 69,
+      "date": "2027-03-13",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 70,
+      "date": "2027-03-20",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 71,
+      "date": "2027-03-27",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 72,
+      "date": "2027-04-03",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 73,
+      "date": "2027-04-10",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 74,
+      "date": "2027-04-17",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 75,
+      "date": "2027-04-24",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 76,
+      "date": "2027-05-01",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 77,
+      "date": "2027-05-08",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 78,
+      "date": "2027-05-15",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 79,
+      "date": "2027-05-22",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    },
+    {
+      "id": 80,
+      "date": "2027-05-29",
+      "type": "MATCH",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "opponent": null,
+      "location": null,
+      "status": "OPEN"
+    }
+  ],
+  "attendances": [],
+  "matchStats": []
+}
