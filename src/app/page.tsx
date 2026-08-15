@@ -1,5 +1,6 @@
-import Link from 'next/link';
 import { formatDate, getNextActivity, getStatusText } from '@/lib/utils';
+import { Card } from '@/components/Card';
+import { NavButton } from '@/components/NavButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ export default async function HomePage() {
         <h1 className="mt-2 text-3xl font-bold text-slate-900">Dashboard</h1>
       </header>
 
-      <section className="card mb-6 bg-emerald-50">
+      <Card className="mb-6 bg-emerald-50">
         <p className="text-sm font-medium text-emerald-700">Volgende activiteit</p>
         {nextActivity ? (
           <>
@@ -30,21 +31,13 @@ export default async function HomePage() {
         ) : (
           <p className="mt-3 text-sm text-slate-700">Geen toekomstige activiteit gevonden.</p>
         )}
-      </section>
+      </Card>
 
       <nav className="grid grid-cols-2 gap-3">
-        <Link href="/trainingen" className="card flex h-24 items-center justify-center bg-slate-900 text-center text-lg font-semibold text-white">
-          Trainingen
-        </Link>
-        <Link href="/wedstrijden" className="card flex h-24 items-center justify-center bg-emerald-600 text-center text-lg font-semibold text-white">
-          Wedstrijden
-        </Link>
-        <Link href="/spelers" className="card flex h-24 items-center justify-center bg-amber-500 text-center text-lg font-semibold text-white">
-          Spelers
-        </Link>
-        <Link href="/statistieken" className="card flex h-24 items-center justify-center bg-sky-600 text-center text-lg font-semibold text-white">
-          Statistieken
-        </Link>
+        <NavButton href="/trainingen" label="Trainingen" color="bg-slate-900" />
+        <NavButton href="/wedstrijden" label="Wedstrijden" color="bg-emerald-600" />
+        <NavButton href="/spelers" label="Spelers" color="bg-amber-500" />
+        <NavButton href="/statistieken" label="Statistieken" color="bg-sky-600" />
       </nav>
     </main>
   );

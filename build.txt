@@ -1,0 +1,43 @@
+npm notice run voetbalapp@1.0.0 build
+npm notice run next build
+  ▲ Next.js 14.2.15
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/12) ...
+   Generating static pages (3/12) 
+   Generating static pages (6/12) 
+   Generating static pages (9/12) 
+ ✓ Generating static pages (12/12)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ƒ /                                    181 B          94.1 kB
+├ ○ /_not-found                          873 B            88 kB
+├ ƒ /api/activities                      0 B                0 B
+├ ƒ /api/activities/[id]                 0 B                0 B
+├ ○ /api/activities/generate             0 B                0 B
+├ ƒ /api/attendance                      0 B                0 B
+├ ƒ /api/match-stats                     0 B                0 B
+├ ƒ /api/players                         0 B                0 B
+├ ƒ /api/stats                           0 B                0 B
+├ ƒ /spelers                             145 B          87.3 kB
+├ ƒ /statistieken                        145 B          87.3 kB
+├ ƒ /trainingen                          181 B          94.1 kB
+├ ○ /trainingen/registreren              1.33 kB        88.5 kB
+├ ƒ /wedstrijden                         181 B          94.1 kB
+├ ƒ /wedstrijden/bewerken                145 B          87.3 kB
+└ ○ /wedstrijden/registreren             1.99 kB        89.1 kB
++ First Load JS shared by all            87.1 kB
+  ├ chunks/117-286c90918c562945.js       31.6 kB
+  ├ chunks/fd9d1056-8a4ce9f678d40efd.js  53.6 kB
+  └ other shared chunks (total)          1.89 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
