@@ -31,44 +31,35 @@ async function main() {
     });
   }
 
-  const baseDate = '2026-08-24';
+  // Eerste training: woensdag 26 augustus 2026, 15:00–16:00
+  const trainingDate = '2026-08-26';
   const training = await prisma.activity.create({
     data: {
-      date: baseDate,
+      date: trainingDate,
       type: 'TRAINING',
       startTime: '15:00',
       endTime: '16:00',
-      location: 'Sportpark de Burcht',
       opponent: null,
-      status: 'registered',
+      location: null,
+      status: 'OPEN',
     },
   });
 
-  const playersFromDb = await prisma.player.findMany({ where: { teamId: team.id } });
-  for (const player of playersFromDb) {
-    await prisma.attendance.create({
-      data: {
-        activityId: training.id,
-        playerId: player.id,
-        present: true,
-      },
-    });
-  }
-
+  // Eerste wedstrijd: zaterdag 29 augustus 2026
   const matchDate = '2026-08-29';
-  await prisma.activity.create({
+  const match = await prisma.activity.create({
     data: {
       date: matchDate,
       type: 'MATCH',
-      startTime: '18:30',
-      endTime: '19:45',
-      opponent: 'SV De Meern',
-      location: 'Sportpark Noord',
-      status: 'registered',
+      startTime: '10:00',
+      endTime: '11:15',
+      opponent: null,
+      location: null,
+      status: 'OPEN',
     },
   });
 
-  console.log('Database seeded with team and players.');
+  console.log('Database seeded with team, players, and activities.');
 }
 
 main()
