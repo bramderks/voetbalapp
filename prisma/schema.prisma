@@ -9,18 +9,18 @@ datasource db {
 }
 
 model Team {
-  id    Int     @id @default(autoincrement())
-  name  String
+  id      Int      @id @default(autoincrement())
+  name    String
   players Player[]
 }
 
 model Player {
-  id     Int      @id @default(autoincrement())
-  name   String
-  teamId Int
-  team   Team     @relation(fields: [teamId], references: [id])
+  id          Int          @id @default(autoincrement())
+  name        String
+  teamId      Int
   attendances Attendance[]
-  matchStats MatchStat[]
+  matchStats  MatchStat[]
+  team        Team         @relation(fields: [teamId], references: [id])
 }
 
 model Activity {
@@ -44,7 +44,7 @@ model Attendance {
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@unique([activityId, playerId])
+  @@unique([activityId, playerId], name: "activityId_playerId")
 }
 
 model MatchStat {
