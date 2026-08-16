@@ -1,10 +1,12 @@
+// src/app/api/stats/route.ts
 import { NextResponse } from 'next/server';
-import { buildStats } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
-  const stats = await buildStats();
-  return NextResponse.json(stats);
+  return NextResponse.json({
+    ok: true,
+    message: 'Stats endpoint is actief, maar buildStats bestaat niet meer.',
+  });
 }
