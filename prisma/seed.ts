@@ -1,110 +1,131 @@
-import { PrismaClient } from '@prisma/client';
-
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// Helper function to format date as YYYY-MM-DD
-function formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-// Helper function to format time as HH:mm
-function formatTime(hours: number, minutes: number = 0): string {
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-}
-
 async function main() {
-  const existingTeam = await prisma.team.findFirst();
-  if (existingTeam) {
-    console.log('Seed already exists. Skipping.');
-    return;
-  }
-
+  // TEAM
   const team = await prisma.team.create({
-    data: {
-      name: 'SCE JO8-1',
-    },
+    data: { name: "SCE JO8-1" },
   });
 
-  const players = [
-    'Tobi',
-    'Joa',
-    'Muad',
-    'Moussa',
-    'Eymen',
-    'Jamie',
-    'Romy',
-    'Mahmoud',
+  // SPELERS
+  const spelers = await Promise.all(
+    [
+      "Tobi","Sem","Milan","Lucas","Daan","Finn","Noah",
+      "Jesse","Thijs","Ruben","Lars","Tom","Niek","Gijs"
+    ].map((naam) =>
+      prisma.player.create({
+        data: { name: naam, teamId: team.id },
+      })
+    )
+  );
+
+  // TRAININGEN: di 18 aug, do 20 aug, daarna elke woensdag
+  const trainingen: any[] = [];
+
+  // Eerste twee trainingen
+  const eersteTrainingen = [
+    "2026-08-18",
+    "2026-08-20"
   ];
 
-  for (const playerName of players) {
-    await prisma.player.create({
+  for (const date of eersteTrainingen) {
+    const t = await prisma.activity.create({
       data: {
-        name: playerName,
-        teamId: team.id,
+        type: "TRAINING",
+        date,
+        startTime: "15:00",
+        endTime: "16:00",
+        status: "registered",
+        location: "Sportpark SCE",
       },
     });
+    trainingen.push(t);
   }
 
-  // Generate season 2026-2027
-  // Trainings: every Wednesday from 26 Aug 2026 to 31 May 2027
-  // Matches: every Saturday from 24 Aug 2026 to 29 May 2027
+  // Daarna elke woensdag tot eind december
+  const maanden = ["2026-08","2026-09","2026-10","2026-11","2026-12"];
 
-  const seasonStart = new Date(2026, 7, 24); // 24 August 2026 (Saturday)
-  const seasonEnd = new Date(2027, 4, 31); // End of May 2027
+  for (const maand of maanden) {
+    for (let dag = 1; dag <= 31; dag++) {
+      const date = `${maand}-${String(dag).padStart(2, "0")}`;
+      const weekday = new Date(date).getDay();
 
-  // Generate all Wednesdays (trainings)
-  let currentTrainingDate = new Date(2026, 7, 26); // First Wednesday: 26 August 2026
-  while (currentTrainingDate <= seasonEnd) {
-    if (currentTrainingDate.getDay() === 3) { // Wednesday = 3
-      const dateStr = formatDate(currentTrainingDate);
-      await prisma.activity.create({
+      if (weekday === 3) { // woensdag
+        const t = await prisma.activity.create({
+          data: {
+            type: "TRAINING",
+            date,
+            startTime: "15:00",
+            endTime: "16:00",
+            status: "registered",
+            location: "Sportpark SCE",
+          },
+        });
+        trainingen.push(t);
+      }
+    }
+  }
+
+  // WEDSTRIJDEN: elke zaterdag sep–dec
+  const wedstrijden: any[] = [];
+  const matchMonths = ["2026-09","2026-10","2026-11","2026-12"];
+
+  for (const maand of matchMonths) {
+    for (let dag = 1; dag <= 31; dag++) {
+      const date = `${maand}-${String(dag).padStart(2, "0")}`;
+      const weekday = new Date(date).getDay();
+
+      if (weekday === 6) { // zaterdag
+        const w = await prisma.activity.create({
+          data: {
+            type: "MATCH",
+            date,
+            startTime: "10:00",
+            endTime: "11:00",
+            status: "registered",
+            opponent: "Tegenstander",
+            location: "Sportpark SCE",
+          },
+        });
+        wedstrijden.push(w);
+      }
+    }
+  }
+
+  // ATTENDANCE voor ALLE trainingen
+  for (const training of trainingen) {
+    for (const speler of spelers) {
+      await prisma.attendance.create({
         data: {
-          date: dateStr,
-          type: 'TRAINING',
-          startTime: formatTime(15),
-          endTime: formatTime(16),
-          opponent: null,
-          location: null,
-          status: 'OPEN',
+          activityId: training.id,
+          playerId: speler.id,
+          present: true,
         },
       });
     }
-    currentTrainingDate.setDate(currentTrainingDate.getDate() + 1);
   }
 
-  // Generate all Saturdays (matches)
-  let currentMatchDate = new Date(2026, 7, 24); // First Saturday: 24 August 2026
-  while (currentMatchDate <= seasonEnd) {
-    if (currentMatchDate.getDay() === 6) { // Saturday = 6
-      const dateStr = formatDate(currentMatchDate);
-      await prisma.activity.create({
+  // MATCHSTATS voor ALLE wedstrijden
+  for (const wedstrijd of wedstrijden) {
+    for (const speler of spelers.slice(0, 5)) {
+      await prisma.matchStat.create({
         data: {
-          date: dateStr,
-          type: 'MATCH',
-          startTime: formatTime(10),
-          endTime: formatTime(11, 15),
-          opponent: null,
-          location: null,
-          status: 'OPEN',
+          activityId: wedstrijd.id,
+          playerId: speler.id,
+          goals: Math.floor(Math.random() * 3),
+          assists: Math.floor(Math.random() * 2),
         },
       });
     }
-    currentMatchDate.setDate(currentMatchDate.getDate() + 1);
   }
 
-  const trainingCount = await prisma.activity.count({ where: { type: 'TRAINING' } });
-  const matchCount = await prisma.activity.count({ where: { type: 'MATCH' } });
-  console.log(`Database seeded: ${trainingCount} trainings, ${matchCount} matches, ${players.length} players in team SCE JO8-1.`);
+  console.log("Seizoen seed voltooid!");
 }
 
 main()
+  .then(() => prisma.$disconnect())
   .catch((e) => {
     console.error(e);
+    prisma.$disconnect();
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });
