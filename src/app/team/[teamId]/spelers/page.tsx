@@ -16,24 +16,29 @@ export default function SpelersPage({ params }: Props) {
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState("");
 
-  const loadPlayers = async () => {
-    const res = await fetch("/api/teamPlayers?teamId=" + teamId);
-    const data = await res.json();
-    setPlayers(data);
-  };
-
   useEffect(() => {
+    const loadPlayers = async () => {
+      const res = await fetch("/api/teamPlayers?teamId=" + teamId);
+      const data = await res.json();
+      setPlayers(data);
+    };
+
     loadPlayers();
   }, [teamId]);
 
   const addPlayer = async () => {
     if (!name.trim()) return;
+
     await fetch("/api/players", {
       method: "POST",
       body: JSON.stringify({ name, teamId }),
     });
+
     setName("");
-    await loadPlayers();
+
+    const res = await fetch("/api/teamPlayers?teamId=" + teamId);
+    const data = await res.json();
+    setPlayers(data);
   };
 
   const deletePlayer = async (id: number) => {
@@ -41,7 +46,10 @@ export default function SpelersPage({ params }: Props) {
       method: "DELETE",
       body: JSON.stringify({ id }),
     });
-    await loadPlayers();
+
+    const res = await fetch("/api/teamPlayers?teamId=" + teamId);
+    const data = await res.json();
+    setPlayers(data);
   };
 
   return (

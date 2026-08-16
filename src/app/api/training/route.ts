@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const teamId = Number(searchParams.get("teamId"));
-
+export async function GET() {
   const trainings = await prisma.activity.findMany({
     where: { type: "TRAINING" },
     orderBy: { date: "desc" },
@@ -13,8 +10,8 @@ export async function GET(req: Request) {
   return NextResponse.json(trainings);
 }
 
-export async function POST(req: Request) {
-  const body = await req.json();
+export async function POST(request: Request) {
+  const body = await request.json();
 
   const training = await prisma.activity.create({
     data: {

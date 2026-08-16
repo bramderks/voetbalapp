@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request) {
+export async function GET() {
   const matches = await prisma.activity.findMany({
     where: { type: "MATCH" },
     orderBy: { date: "desc" },
@@ -10,8 +10,8 @@ export async function GET(req: Request) {
   return NextResponse.json(matches);
 }
 
-export async function POST(req: Request) {
-  const body = await req.json();
+export async function POST(request: Request) {
+  const body = await request.json();
 
   const match = await prisma.activity.create({
     data: {
