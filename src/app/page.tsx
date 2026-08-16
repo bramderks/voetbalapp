@@ -1,13 +1,20 @@
-// src/app/page.tsx
-export default function HomePage() {
-  return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Voetbalapp Dashboard</h1>
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
-      <div className="p-4 border rounded-lg bg-white shadow">
-        <h2 className="text-xl font-semibold mb-2">Volgende activiteit</h2>
-        <p className="text-gray-600">Geen activiteiten gevonden.</p>
-      </div>
+export default async function HomePage() {
+  const teams = await prisma.team.findMany();
+
+  return (
+    <main style={{ padding: 16 }}>
+      <h1>Voetbalapp – Selecteer team</h1>
+      {teams.length === 0 && <p>Geen teams gevonden.</p>}
+      <ul>
+        {teams.map((team) => (
+          <li key={team.id}>
+            <Link href={`/team/${team.id}`}>{team.name}</Link>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
