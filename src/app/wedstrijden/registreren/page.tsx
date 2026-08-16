@@ -7,72 +7,87 @@ function MatchRegistrationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activityId = Number(searchParams.get('id') ?? 0);
+
   const [players, setPlayers] = useState<{ id: number; name: string }[]>([]);
-  const [activity, setActivity] = useState<{ id: number; date: string; startTime: string; endTime: string; opponent: string | null; location: string | null } | null>(null);
+  const [activity, setActivity] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const incrementValue = (field: string, delta: number) => {
-    const input = document.querySelector<HTMLInputElement>(`input[name="${field}"]`);
-    if (!input) return;
-    const next = Math.max(0, Number(input.value || 0) + delta);
-    input.value = String(next);
-  };
+  // Controlled states
+  const [attendance, setAttendance] = useState<Record<number, boolean>>({});
+  const [goals, setGoals] = useState<Record<number, number>>({});
+  const [assists, setAssists] = useState<Record<number, number>>({});
 
   useEffect(() => {
     async function loadData() {
-      const [teamRes, activityRes] = await Promise.all([
+      const [teamRes, activityRes, attendanceRes, statsRes] = await Promise.all([
         fetch('/api/players'),
         fetch(`/api/activities?id=${activityId}`),
+        fetch(`/api/attendance?activityId=${activityId}`),
+        fetch(`/api/matchstats?activityId=${activityId}`),
       ]);
 
       const teamData = await teamRes.json();
       const activityData = await activityRes.json();
+      const attendanceData = await attendanceRes.json();
+      const statsData = await statsRes.json();
 
       setPlayers(teamData.players ?? []);
       setActivity(activityData ?? null);
+
+      const initAttendance: Record<number, boolean> = {};
+      const initGoals: Record<number, number> = {};
+      const initAssists: Record<number, number> = {};
+
+      for (const p of teamData.players ?? []) {
+        const a = attendanceData.find((x: any) => x.playerId === p.id);
+        const s = statsData.find((x: any) => x.playerId === p.id);
+
+        initAttendance[p.id] = a ? a.present : false;
+        initGoals[p.id] = s ? s.goals : 0;
+        initAssists[p.id] = s ? s.assists : 0;
+      }
+
+      setAttendance(initAttendance);
+      setGoals(initGoals);
+      setAssists(initAssists);
+
       setLoading(false);
     }
 
-    if (activityId) {
-      loadData();
-    }
+    if (activityId) loadData();
   }, [activityId]);
 
   const submitMatch = async () => {
     setLoading(true);
 
-    const form = {
-      id: activityId,
-      opponent: (document.querySelector<HTMLInputElement>('input[name="opponent"]')?.value ?? '').trim(),
-      location: (document.querySelector<HTMLInputElement>('input[name="location"]')?.value ?? '').trim(),
-      startTime: (document.querySelector<HTMLInputElement>('input[name="startTime"]')?.value ?? ''),
-      endTime: (document.querySelector<HTMLInputElement>('input[name="endTime"]')?.value ?? ''),
-      result: (document.querySelector<HTMLInputElement>('input[name="result"]')?.value ?? '').trim(),
-    };
+    for (const player of players) {
+      await fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activityId,
+          playerId: player.id,
+          present: attendance[player.id] ?? false,
+        }),
+      });
+
+      await fetch('/api/matchstats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          activityId,
+          playerId: player.id,
+          goals: goals[player.id] ?? 0,
+          assists: assists[player.id] ?? 0,
+        }),
+      });
+    }
 
     await fetch('/api/activities', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ id: activityId, status: 'registered' }),
     });
-
-    for (const player of players) {
-      const present = (document.querySelector<HTMLInputElement>(`input[name="present-${player.id}"]:checked`)?.value ?? 'false') === 'true';
-      const goals = Number(document.querySelector<HTMLInputElement>(`input[name="goals-${player.id}"]`)?.value ?? 0);
-      const assists = Number(document.querySelector<HTMLInputElement>(`input[name="assists-${player.id}"]`)?.value ?? 0);
-
-      await fetch('/api/attendance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ activityId, playerId: player.id, present }),
-      });
-
-      await fetch('/api/match-stats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ activityId, playerId: player.id, goals, assists }),
-      });
-    }
 
     router.refresh();
     router.push('/wedstrijden');
@@ -92,61 +107,92 @@ function MatchRegistrationContent() {
         <span className="text-2xl leading-none">⚽</span>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Wedstrijd registreren</p>
-          <h1 className="text-2xl font-bold text-slate-900">{new Date(activity.date).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {new Date(activity.date).toLocaleDateString('nl-NL', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </h1>
         </div>
       </header>
 
-      <div className="space-y-5">
-        <div className="card space-y-3">
-          <input name="opponent" defaultValue={activity.opponent ?? ''} placeholder="Tegenstander" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-          <input name="location" defaultValue={activity.location ?? ''} placeholder="Locatie" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-          <div className="grid grid-cols-2 gap-2">
-            <input name="startTime" defaultValue={activity.startTime} type="time" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-            <input name="endTime" defaultValue={activity.endTime} type="time" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-          </div>
-          <input name="result" placeholder="Uitslag (bv. 2-1)" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-        </div>
+      <div className="space-y-4">
+        {players.map((player) => (
+          <div key={player.id} className="card p-3 rounded-xl border flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-slate-800">{player.name}</span>
 
-        <div className="space-y-3">
-          {players.map((player) => (
-            <div key={player.id} className="card space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-medium text-slate-800">{player.name}</span>
-                <div className="flex gap-2">
-                  <label className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
-                    <input type="radio" name={`present-${player.id}`} value="true" />
-                    🟢 Aanwezig
-                  </label>
-                  <label className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
-                    <input type="radio" name={`present-${player.id}`} value="false" defaultChecked />
-                    🔴 Afwezig
-                  </label>
-                </div>
-              </div>
+              <div className="flex gap-2">
+                <label className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+                  <input
+                    type="radio"
+                    name={`present-${player.id}`}
+                    value="true"
+                    checked={attendance[player.id] === true}
+                    onChange={() => setAttendance({ ...attendance, [player.id]: true })}
+                  />
+                  🟢 Aanwezig
+                </label>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-slate-200 p-2">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Goals</p>
-                  <div className="flex items-center justify-between gap-2">
-                    <button type="button" onClick={() => incrementValue(`goals-${player.id}`, -1)} className="h-10 w-10 rounded-lg bg-slate-200 text-xl font-bold text-slate-700">−</button>
-                    <input name={`goals-${player.id}`} defaultValue={0} className="w-14 rounded-lg border border-slate-300 px-2 py-2 text-center text-base font-semibold" readOnly />
-                    <button type="button" onClick={() => incrementValue(`goals-${player.id}`, 1)} className="h-10 w-10 rounded-lg bg-emerald-500 text-xl font-bold text-white">+</button>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-slate-200 p-2">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Assists</p>
-                  <div className="flex items-center justify-between gap-2">
-                    <button type="button" onClick={() => incrementValue(`assists-${player.id}`, -1)} className="h-10 w-10 rounded-lg bg-slate-200 text-xl font-bold text-slate-700">−</button>
-                    <input name={`assists-${player.id}`} defaultValue={0} className="w-14 rounded-lg border border-slate-300 px-2 py-2 text-center text-base font-semibold" readOnly />
-                    <button type="button" onClick={() => incrementValue(`assists-${player.id}`, 1)} className="h-10 w-10 rounded-lg bg-sky-500 text-xl font-bold text-white">+</button>
-                  </div>
-                </div>
+                <label className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
+                  <input
+                    type="radio"
+                    name={`present-${player.id}`}
+                    value="false"
+                    checked={attendance[player.id] === false}
+                    onChange={() => setAttendance({ ...attendance, [player.id]: false })}
+                  />
+                  🔴 Afwezig
+                </label>
               </div>
             </div>
-          ))}
-        </div>
 
-        <button onClick={submitMatch} className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-700">Goals</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setGoals({ ...goals, [player.id]: Math.max(0, goals[player.id] - 1) })}
+                  className="px-3 py-1 bg-slate-200 rounded-lg"
+                >
+                  -
+                </button>
+                <span className="w-6 text-center">{goals[player.id]}</span>
+                <button
+                  onClick={() => setGoals({ ...goals, [player.id]: goals[player.id] + 1 })}
+                  className="px-3 py-1 bg-slate-200 rounded-lg"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-700">Assists</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAssists({ ...assists, [player.id]: Math.max(0, assists[player.id] - 1) })}
+                  className="px-3 py-1 bg-slate-200 rounded-lg"
+                >
+                  -
+                </button>
+                <span className="w-6 text-center">{assists[player.id]}</span>
+                <button
+                  onClick={() => setAssists({ ...assists, [player.id]: assists[player.id] + 1 })}
+                  className="px-3 py-1 bg-slate-200 rounded-lg"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <button
+          onClick={submitMatch}
+          className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white"
+        >
           Opslaan
         </button>
       </div>

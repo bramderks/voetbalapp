@@ -4,54 +4,49 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// GET — haal activiteit op
 export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const id = url.searchParams.get('id');
+  const { searchParams } = new URL(req.url);
+  const id = Number(searchParams.get('id'));
 
-  if (id) {
-    const activity = await prisma.activity.findUnique({
-      where: { id: Number(id) },
-    });
-    return NextResponse.json(activity);
+  if (!id) {
+    return NextResponse.json(null, { status: 200 });
   }
 
-  const activities = await prisma.activity.findMany({
-    orderBy: { date: 'asc' },
+  const activity = await prisma.activity.findUnique({
+    where: { id },
   });
 
-  return NextResponse.json(activities);
+  return NextResponse.json(activity ?? null);
 }
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const activity = await prisma.activity.create({
-    data: {
-      date: body.date,
-      type: body.type,
-      startTime: body.startTime,
-      endTime: body.endTime,
-      opponent: body.opponent ?? null,
-      location: body.location ?? null,
-      status: body.status ?? 'registered',
-    },
-  });
-
-  return NextResponse.json(activity);
-}
-
+// PATCH — update activiteit (status)
 export async function PATCH(req: Request) {
   const body = await req.json();
 
-  const activity = await prisma.activity.update({
-    where: { id: Number(body.id) },
+  const updated = await prisma.activity.update({
+    where: { id: body.id },
     data: {
-      opponent: body.opponent ?? undefined,
-      location: body.location ?? undefined,
-      startTime: body.startTime ?? undefined,
-      endTime: body.endTime ?? undefined,
-      status: body.status ?? undefined,
+      status: body.status,
     },
   });
 
-  return NextResponse.json(activity);
+  return NextResponse.json(updated);
+}
+
+// POST — nieuwe activiteit (optioneel, maar netjes om compleet te maken)
+export async function POST(req: Request) {
+  const body = await req.json();
+
+  const created = await prisma.activity.create({
+    data: {
+      date: body.date,
+      startTime: body.startTime,
+      endTime: body.endTime,
+      type: body.type,
+      status: body.status ?? 'open',
+    },
+  });
+
+  return NextResponse.json(created);
 }

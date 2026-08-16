@@ -1,62 +1,119 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { revalidatePath } from 'next/cache';
-import { prisma } from '@/lib/prisma';
-import { formatDate, getStatusText } from '@/lib/utils';
-import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/PageHeader';
-import { StatusBadge } from '@/components/StatusBadge';
 
-export const dynamic = 'force-dynamic';
+export default function TrainingenPage() {
+  const [trainings, setTrainings] = useState<any[]>([]);
+  const [attendance, setAttendance] = useState<Record<number, number>>({});
+  const [loading, setLoading] = useState(true);
 
-async function deleteTraining(formData: FormData) {
-  'use server';
+  useEffect(() => {
+    async function load() {
+      const res = await fetch('/api/activities/list');
+      const data = await res.json();
 
-  const id = Number(formData.get('id'));
-  await prisma.activity.delete({ where: { id } });
-  revalidatePath('/trainingen');
-}
+      const trainingsOnly = data.filter((a: any) => a.type === 'TRAINING');
+      setTrainings(trainingsOnly);
 
-export default async function TrainingenPage() {
-  const trainings = await prisma.activity.findMany({
-    where: { type: 'TRAINING' },
-    orderBy: { date: 'asc' },
-  });
+      const attRes = await fetch('/api/attendance/all');
+      const allAttendance = await attRes.json();
+
+      const counts: Record<number, number> = {};
+
+      for (const t of trainingsOnly) {
+        const presentCount = allAttendance.filter(
+          (x: any) => x.activityId === t.id && x.present === true
+        ).length;
+
+        counts[t.id] = presentCount;
+      }
+
+      setAttendance(counts);
+      setLoading(false);
+    }
+
+    load();
+  }, []);
+
+  if (loading) {
+    return <main className="mx-auto max-w-md p-4 text-center">Laden...</main>;
+  }
 
   return (
-    <main className="mx-auto max-w-md p-4 pb-10">
+    <main className="mx-auto max-w-md p-4 pb-10 bg-black min-h-screen text-white">
+
+      {/* PAGE HEADER IDENTIEK AAN WEDSTRIJDEN */}
       <PageHeader
         eyebrow="Trainingen"
         title="Overzicht"
         icon="🏋️"
         action={
-          <Link href="/trainingen/nieuw" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-xl font-bold text-white">
+          <Link
+            href="/trainingen/nieuw"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-xl font-bold text-white"
+          >
             +
           </Link>
         }
       />
 
-      <div className="space-y-3">
-        {trainings.map((training) => (
-          <Card key={training.id}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-lg font-bold text-slate-900">{formatDate(training.date)}</p>
-                <p className="text-sm text-slate-600">{training.startTime} - {training.endTime}</p>
-                <p className="mt-1 text-sm text-slate-600">{training.location ?? 'Lokatie TBD'}</p>
+      <div className="space-y-3 mt-4">
+        {trainings.length === 0 && (
+          <p className="text-center text-gray-400">Geen trainingen gevonden.</p>
+        )}
+
+        {trainings.map((t) => {
+          const isPast = new Date(t.date) < new Date();
+
+          const content = (
+            <div className="rounded-xl border-2 border-white bg-white text-black p-4 transition shadow-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wide">
+                    Training
+                  </p>
+
+                  <p className="text-lg font-bold">
+                    {new Date(t.date).toLocaleDateString('nl-NL', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
+
+                  <p className="text-sm mt-1">
+                    Aanwezig: {attendance[t.id] ?? 0} spelers
+                  </p>
+                </div>
+
+                <span
+                  className={
+                    isPast
+                      ? 'px-3 py-1 rounded-lg bg-gray-300 text-gray-800 text-sm font-semibold'
+                      : t.status === 'registered'
+                      ? 'px-3 py-1 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-semibold'
+                      : 'px-3 py-1 rounded-lg bg-amber-100 text-amber-700 text-sm font-semibold'
+                  }
+                >
+                  {isPast ? 'Verlopen' : t.status === 'registered' ? 'Geregistreerd' : 'Open'}
+                </span>
               </div>
-              <StatusBadge status={training.status} label={getStatusText(training.status)} />
             </div>
-            <Link href={`/trainingen/registreren?id=${training.id}`} className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white">
-              Registreren
+          );
+
+          if (isPast) {
+            return <div key={t.id}>{content}</div>;
+          }
+
+          return (
+            <Link key={t.id} href={`/trainingen/registreren?id=${t.id}`} className="block">
+              {content}
             </Link>
-            <form action={deleteTraining} className="mt-2">
-              <input type="hidden" name="id" value={training.id} />
-              <button type="submit" className="w-full rounded-xl bg-rose-100 px-3 py-2 text-center text-sm font-semibold text-rose-700">
-                Verwijderen
-              </button>
-            </form>
-          </Card>
-        ))}
+          );
+        })}
       </div>
     </main>
   );

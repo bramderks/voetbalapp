@@ -4,10 +4,27 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// GET — haal bestaande attendance op
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const activityId = Number(searchParams.get('activityId'));
+
+  if (!activityId) {
+    return NextResponse.json([], { status: 200 });
+  }
+
+  const attendance = await prisma.attendance.findMany({
+    where: { activityId },
+  });
+
+  return NextResponse.json(attendance);
+}
+
+// POST — sla attendance op
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const stat = await prisma.matchStat.upsert({
+  const attendance = await prisma.attendance.upsert({
     where: {
       activityId_playerId: {
         activityId: body.activityId,
@@ -15,16 +32,14 @@ export async function POST(req: Request) {
       },
     },
     update: {
-      goals: body.goals ?? 0,
-      assists: body.assists ?? 0,
+      present: body.present,
     },
     create: {
       activityId: body.activityId,
       playerId: body.playerId,
-      goals: body.goals ?? 0,
-      assists: body.assists ?? 0,
+      present: body.present,
     },
   });
 
-  return NextResponse.json(stat);
+  return NextResponse.json(attendance);
 }
