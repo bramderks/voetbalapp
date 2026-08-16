@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
+import { formatDate, getStatusText } from '@/lib/utils';
 
 export default function TrainingenPage() {
   const [trainings, setTrainings] = useState<any[]>([]);
@@ -44,7 +45,6 @@ export default function TrainingenPage() {
   return (
     <main className="mx-auto max-w-md p-4 pb-10 bg-black min-h-screen text-white">
 
-      {/* PAGE HEADER IDENTIEK AAN WEDSTRIJDEN */}
       <PageHeader
         eyebrow="Trainingen"
         title="Overzicht"

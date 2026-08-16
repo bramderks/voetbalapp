@@ -1,5 +1,6 @@
-import { buildStats } from '@/lib/utils';
+import { buildStats } from '@/lib/server-utils';
 import { PageHeader } from '@/components/PageHeader';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -7,26 +8,26 @@ export default async function StatistiekenPage() {
   const stats = await buildStats();
 
   return (
-    <main className="mx-auto max-w-md p-4 pb-10">
+    <main className="mx-auto max-w-md p-4 pb-10 bg-black min-h-screen text-white">
       <PageHeader eyebrow="Statistieken" title="Team & spelers" icon="📊" />
 
       {/* Team Statistics Section */}
       <section className="mb-6">
-        <h2 className="mb-3 text-lg font-bold text-slate-900">Teamstatistieken</h2>
+        <h2 className="mb-3 text-lg font-bold text-white">Teamstatistieken</h2>
 
         {/* Trainings Section */}
         <div className="mb-3 grid grid-cols-2 gap-3">
-          <div className="card">
+          <div className="rounded-xl bg-white text-black p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Trainingen</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.team.totalTrainings}</p>
+            <p className="mt-2 text-2xl font-bold">{stats.team.totalTrainings}</p>
             <p className="mt-1 text-xs text-slate-600">totaal dit seizoen</p>
           </div>
-          <div className="card">
+          <div className="rounded-xl bg-white text-black p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Geregistreerd</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.team.trainingsWithAttendance}</p>
+            <p className="mt-2 text-2xl font-bold">{stats.team.trainingsWithAttendance}</p>
             <p className="mt-1 text-xs text-slate-600">met deelname</p>
           </div>
-          <div className="card col-span-2">
+          <div className="rounded-xl bg-white text-black p-4 col-span-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Opkomst trainingen</p>
@@ -39,17 +40,17 @@ export default async function StatistiekenPage() {
 
         {/* Matches Section */}
         <div className="mb-3 grid grid-cols-2 gap-3">
-          <div className="card">
+          <div className="rounded-xl bg-white text-black p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Wedstrijden</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.team.totalMatches}</p>
+            <p className="mt-2 text-2xl font-bold">{stats.team.totalMatches}</p>
             <p className="mt-1 text-xs text-slate-600">totaal dit seizoen</p>
           </div>
-          <div className="card">
+          <div className="rounded-xl bg-white text-black p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Geregistreerd</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.team.matchesWithAttendance}</p>
+            <p className="mt-2 text-2xl font-bold">{stats.team.matchesWithAttendance}</p>
             <p className="mt-1 text-xs text-slate-600">met deelname</p>
           </div>
-          <div className="card col-span-2">
+          <div className="rounded-xl bg-white text-black p-4 col-span-2">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Opkomst wedstrijden</p>
@@ -62,20 +63,20 @@ export default async function StatistiekenPage() {
 
         {/* Goals & Assists Section */}
         <div className="mb-3 grid grid-cols-2 gap-3">
-          <div className="card">
+          <div className="rounded-xl bg-white text-black p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Goals</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.team.totalGoals}</p>
+            <p className="mt-2 text-2xl font-bold">{stats.team.totalGoals}</p>
             <p className="mt-1 text-xs text-slate-600">dit seizoen</p>
           </div>
-          <div className="card">
+          <div className="rounded-xl bg-white text-black p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Assists</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{stats.team.totalAssists}</p>
+            <p className="mt-2 text-2xl font-bold">{stats.team.totalAssists}</p>
             <p className="mt-1 text-xs text-slate-600">dit seizoen</p>
           </div>
         </div>
 
         {/* Match Results Section */}
-        <div className="card">
+        <div className="rounded-xl bg-white text-black p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Wedstrijdresultaten</p>
           <div className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div className="rounded-lg bg-emerald-50 p-3">
@@ -96,12 +97,12 @@ export default async function StatistiekenPage() {
 
       {/* Player Statistics Section */}
       <section>
-        <h2 className="mb-3 text-lg font-bold text-slate-900">Spelerstatistieken</h2>
+        <h2 className="mb-3 text-lg font-bold text-white">Spelerstatistieken</h2>
         <div className="space-y-3">
           {stats.players.map((player) => (
-            <div key={player.id} className="card">
+            <div key={player.id} className="rounded-xl bg-white text-black p-4">
               <div className="mb-3">
-                <p className="text-base font-bold text-slate-900">{player.name}</p>
+                <p className="text-base font-bold">{player.name}</p>
               </div>
 
               {/* Training Stats */}
@@ -109,11 +110,11 @@ export default async function StatistiekenPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Trainingen</p>
                 <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
                   <div>
-                    <p className="font-bold text-slate-900">{player.trainingCount}</p>
+                    <p className="font-bold">{player.trainingCount}</p>
                     <p className="text-xs text-slate-600">Deelgenomen</p>
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">{player.trainingAttendance}</p>
+                    <p className="font-bold">{player.trainingAttendance}</p>
                     <p className="text-xs text-slate-600">Aanwezig</p>
                   </div>
                   <div>
@@ -128,11 +129,11 @@ export default async function StatistiekenPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Wedstrijden</p>
                 <div className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
                   <div>
-                    <p className="font-bold text-slate-900">{player.matchCount}</p>
+                    <p className="font-bold">{player.matchCount}</p>
                     <p className="text-xs text-slate-600">Deelgenomen</p>
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">{player.matchAttendance}</p>
+                    <p className="font-bold">{player.matchAttendance}</p>
                     <p className="text-xs text-slate-600">Aanwezig</p>
                   </div>
                   <div>
