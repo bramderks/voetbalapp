@@ -9,3 +9,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
   return NextResponse.json(activity);
 }
+
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const id = Number(params.id);
+  await prisma.activity.delete({
+    where: { id },
+  });
+
+  return NextResponse.json({ success: true });
+}

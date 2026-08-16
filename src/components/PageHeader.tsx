@@ -1,7 +1,7 @@
 import { BackLink } from '@/components/BackLink';
 import type { ReactNode } from 'react';
 
-export function PageHeader({ eyebrow, title, icon }: { eyebrow: string; title: string; icon?: ReactNode }) {
+export function PageHeader({ eyebrow, title, icon, action }: { eyebrow: string; title: string; icon?: ReactNode; action?: ReactNode }) {
   return (
     <header className="mb-5 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -11,7 +11,10 @@ export function PageHeader({ eyebrow, title, icon }: { eyebrow: string; title: s
           <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
         </div>
       </div>
-      <BackLink />
+      <div className="flex items-center gap-2">
+        {action}
+        <BackLink />
+      </div>
     </header>
   );
 }

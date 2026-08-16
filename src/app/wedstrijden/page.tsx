@@ -1,10 +1,19 @@
 import Link from 'next/link';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/PageHeader';
 
 export const dynamic = 'force-dynamic';
+
+async function deleteMatch(formData: FormData) {
+  'use server';
+
+  const id = Number(formData.get('id'));
+  await prisma.activity.delete({ where: { id } });
+  revalidatePath('/wedstrijden');
+}
 
 export default async function WedstrijdenPage() {
   const matches = await prisma.activity.findMany({
@@ -14,7 +23,16 @@ export default async function WedstrijdenPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
-      <PageHeader eyebrow="Wedstrijden" title="Overzicht" icon="⚽" />
+      <PageHeader
+        eyebrow="Wedstrijden"
+        title="Overzicht"
+        icon="⚽"
+        action={
+          <Link href="/wedstrijden/nieuw" className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-xl font-bold text-white">
+            +
+          </Link>
+        }
+      />
 
       <div className="space-y-3">
         {matches.map((match) => (
@@ -31,6 +49,12 @@ export default async function WedstrijdenPage() {
                 Bewerken
               </Link>
             </div>
+            <form action={deleteMatch} className="mt-2">
+              <input type="hidden" name="id" value={match.id} />
+              <button type="submit" className="w-full rounded-xl bg-rose-100 px-3 py-2 text-center text-sm font-semibold text-rose-700">
+                Verwijderen
+              </button>
+            </form>
           </Card>
         ))}
       </div>
