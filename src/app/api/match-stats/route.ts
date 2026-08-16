@@ -9,7 +9,10 @@ export async function POST(req: Request) {
 
   const stat = await prisma.matchStat.upsert({
     where: {
-      id: body.id ?? -1,
+      activityId_playerId: {
+        activityId: body.activityId,
+        playerId: body.playerId,
+      },
     },
     update: {
       goals: body.goals ?? 0,

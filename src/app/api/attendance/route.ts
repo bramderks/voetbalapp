@@ -9,7 +9,10 @@ export async function POST(req: Request) {
 
   const attendance = await prisma.attendance.upsert({
     where: {
-      id: body.id ?? -1,
+      activityId_playerId: {
+        activityId: body.activityId,
+        playerId: body.playerId,
+      },
     },
     update: {
       present: body.present,

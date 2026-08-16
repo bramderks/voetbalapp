@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  directUrl = env("DIRECT_URL")
 }
 
 model Team {
@@ -43,6 +43,8 @@ model Attendance {
   present    Boolean  @default(false)
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, playerId])
 }
 
 model MatchStat {
@@ -53,4 +55,6 @@ model MatchStat {
   assists    Int      @default(0)
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, playerId])
 }
