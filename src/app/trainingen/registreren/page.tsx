@@ -54,6 +54,7 @@ function TrainingRegistrationContent() {
       body: JSON.stringify({ id: activityId, status: 'registered' }),
     });
 
+    router.refresh();
     router.push('/trainingen');
   };
 

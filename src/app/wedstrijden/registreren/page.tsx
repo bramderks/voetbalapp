@@ -74,6 +74,7 @@ function MatchRegistrationContent() {
       });
     }
 
+    router.refresh();
     router.push('/wedstrijden');
   };
 

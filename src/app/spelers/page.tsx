@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { PageHeader } from '@/components/PageHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,10 +11,7 @@ export default async function SpelersPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
-      <header className="mb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Spelers</p>
-        <h1 className="text-2xl font-bold text-slate-900">Selectie</h1>
-      </header>
+      <PageHeader eyebrow="Spelers" title="Selectie" icon="👥" />
 
       <div className="space-y-3">
         {players.map((player) => (

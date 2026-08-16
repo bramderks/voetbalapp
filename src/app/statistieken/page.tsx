@@ -1,4 +1,5 @@
 import { buildStats } from '@/lib/utils';
+import { PageHeader } from '@/components/PageHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,10 +8,7 @@ export default async function StatistiekenPage() {
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
-      <header className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Statistieken</p>
-        <h1 className="text-2xl font-bold text-slate-900">Team & spelers</h1>
-      </header>
+      <PageHeader eyebrow="Statistieken" title="Team & spelers" icon="📊" />
 
       {/* Team Statistics Section */}
       <section className="mb-6">
