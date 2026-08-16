@@ -1,3 +1,4 @@
+// src/app/wedstrijden/bewerken/page.tsx
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 
@@ -24,6 +25,8 @@ async function saveMatchDetails(formData: FormData) {
 }
 
 export default async function EditMatchPage({ searchParams }: { searchParams?: { id?: string } }) {
+  'use server';
+
   const activityId = Number(searchParams?.id ?? 0);
   const match = await prisma.activity.findUnique({
     where: { id: activityId },
@@ -42,13 +45,36 @@ export default async function EditMatchPage({ searchParams }: { searchParams?: {
 
       <form action={saveMatchDetails} className="card space-y-4">
         <input type="hidden" name="activityId" value={match.id} />
-        <input name="opponent" defaultValue={match.opponent ?? ''} placeholder="Tegenstander" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-        <input name="location" defaultValue={match.location ?? ''} placeholder="Locatie" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
+        <input
+          name="opponent"
+          defaultValue={match.opponent ?? ''}
+          placeholder="Tegenstander"
+          className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm"
+        />
+        <input
+          name="location"
+          defaultValue={match.location ?? ''}
+          placeholder="Locatie"
+          className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm"
+        />
         <div className="grid grid-cols-2 gap-3">
-          <input name="startTime" type="time" defaultValue={match.startTime} className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-          <input name="endTime" type="time" defaultValue={match.endTime} className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
+          <input
+            name="startTime"
+            type="time"
+            defaultValue={match.startTime}
+            className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm"
+          />
+          <input
+            name="endTime"
+            type="time"
+            defaultValue={match.endTime}
+            className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm"
+          />
         </div>
-        <button type="submit" className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-base font-semibold text-white">
+        <button
+          type="submit"
+          className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-base font-semibold text-white"
+        >
           Opslaan
         </button>
       </form>
