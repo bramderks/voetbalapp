@@ -1,20 +1,21 @@
-import { prisma } from "@/lib/prisma";
+"use client";
+
 import Link from "next/link";
 
-export default async function HomePage() {
-  const teams = await prisma.team.findMany();
-
+export default function Page() {
   return (
-    <main style={{ padding: 16 }}>
-      <h1>Voetbalapp – Selecteer team</h1>
-      {teams.length === 0 && <p>Geen teams gevonden.</p>}
-      <ul>
-        {teams.map((team) => (
-          <li key={team.id}>
-            <Link href={`/team/${team.id}`}>{team.name}</Link>
-          </li>
-        ))}
-      </ul>
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      <h1 className="text-3xl font-bold text-slate-900 mb-8">
+        Kies jouw team
+      </h1>
+
+      <Link href="/home" className="w-full max-w-sm">
+        <div className="p-6 bg-gray-100 rounded-xl shadow-md text-center cursor-pointer hover:bg-gray-200 transition">
+          <h2 className="text-xl font-semibold text-slate-900">
+            SCE JO8‑1
+          </h2>
+        </div>
+      </Link>
     </main>
   );
 }

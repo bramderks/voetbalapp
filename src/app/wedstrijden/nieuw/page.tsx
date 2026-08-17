@@ -1,53 +1,71 @@
-import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+"use client";
 
-async function createMatch(formData: FormData) {
-  'use server';
+import { useState } from "react";
+import Link from "next/link";
+import { HomeIcon } from "@heroicons/react/24/solid";
 
-  const date = String(formData.get('date') ?? '');
-  const startTime = String(formData.get('startTime') ?? '');
-  const endTime = String(formData.get('endTime') ?? '');
-  const opponent = String(formData.get('opponent') ?? '');
-  const location = String(formData.get('location') ?? '');
+export default function NieuweWedstrijdPage() {
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [opponent, setOpponent] = useState("");
+  const [location, setLocation] = useState("");
 
-  await prisma.activity.create({
-    data: {
-      date,
-      type: 'MATCH',
-      startTime,
-      endTime,
-      opponent: opponent || null,
-      location: location || null,
-      status: 'registered',
-    },
-  });
+  async function saveMatch() {
+    await fetch("/api/match/create", {
+      method: "POST",
+      body: JSON.stringify({ date, time, opponent, location }),
+    });
+    window.location.href = "/wedstrijden";
+  }
 
-  redirect('/wedstrijden');
-}
-
-export default function NewMatchPage() {
   return (
-    <main className="mx-auto max-w-md p-4 pb-10">
-      <header className="mb-5 flex items-center gap-2">
-        <span className="text-2xl leading-none">⚽</span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Wedstrijd</p>
-          <h1 className="text-2xl font-bold text-slate-900">Nieuwe wedstrijd</h1>
-        </div>
+    <main className="min-h-screen bg-white p-4">
+      <header className="flex items-center justify-between mb-6">
+        <Link href="/wedstrijden">
+          <HomeIcon className="w-7 h-7 text-blue-600 cursor-pointer" />
+        </Link>
       </header>
 
-      <form action={createMatch} className="card space-y-4">
-        <input name="date" type="date" required className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-        <div className="grid grid-cols-2 gap-3">
-          <input name="startTime" type="time" required className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-          <input name="endTime" type="time" required className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-        </div>
-        <input name="opponent" placeholder="Tegenstander" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-        <input name="location" placeholder="Locatie" className="w-full rounded-xl border border-slate-300 px-3 py-3 text-sm" />
-        <button type="submit" className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white">
-          Aanmaken
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Nieuwe wedstrijd</h1>
+
+      <div className="flex flex-col gap-4 max-w-md mx-auto">
+        <input
+          type="date"
+          className="p-3 border rounded-lg"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+
+        <input
+          type="time"
+          className="p-3 border rounded-lg"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="Tegenstander"
+          className="p-3 border rounded-lg"
+          value={opponent}
+          onChange={(e) => setOpponent(e.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="Locatie"
+          className="p-3 border rounded-lg"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+
+        <button
+          onClick={saveMatch}
+          className="p-3 bg-blue-600 text-white rounded-lg shadow-md"
+        >
+          Opslaan
         </button>
-      </form>
+      </div>
     </main>
   );
 }

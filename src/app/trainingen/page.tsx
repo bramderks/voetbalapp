@@ -1,30 +1,61 @@
-// src/app/trainingen/page.tsx
-import { prisma } from '@/lib/prisma';
+"use client";
 
-export default async function TrainingenPage() {
-  const trainingen = await prisma.activity.findMany({
-    where: { type: 'TRAINING' },
-    orderBy: { date: 'asc' },
-  });
+import { useState } from "react";
+import Link from "next/link";
+import { HomeIcon } from "@heroicons/react/24/solid";
+
+export default function NieuweTrainingPage() {
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+
+  async function saveTraining() {
+    await fetch("/api/training/create", {
+      method: "POST",
+      body: JSON.stringify({ date, startTime, endTime }),
+    });
+    window.location.href = "/trainingen";
+  }
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Trainingen</h1>
+    <main className="min-h-screen bg-white p-4">
+      <header className="flex items-center justify-between mb-6">
+        <Link href="/trainingen">
+          <HomeIcon className="w-7 h-7 text-blue-600 cursor-pointer" />
+        </Link>
+      </header>
 
-      {trainingen.length === 0 && (
-        <p className="text-gray-600">Geen trainingen gevonden.</p>
-      )}
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Nieuwe training</h1>
 
-      <ul className="space-y-4">
-        {trainingen.map((training) => (
-          <li key={training.id} className="p-4 border rounded-lg bg-white shadow">
-            <h2 className="text-lg font-semibold">Training</h2>
-            <p>Datum: {new Date(training.date).toLocaleDateString('nl-NL')}</p>
-            <p>Tijd: {training.startTime} - {training.endTime}</p>
-            <p>Locatie: {training.location}</p>
-          </li>
-        ))}
-      </ul>
+      <div className="flex flex-col gap-4 max-w-md mx-auto">
+        <input
+          type="date"
+          className="p-3 border rounded-lg"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+
+        <input
+          type="time"
+          className="p-3 border rounded-lg"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+        />
+
+        <input
+          type="time"
+          className="p-3 border rounded-lg"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+        />
+
+        <button
+          onClick={saveTraining}
+          className="p-3 bg-blue-600 text-white rounded-lg shadow-md"
+        >
+          Opslaan
+        </button>
+      </div>
     </main>
   );
 }
