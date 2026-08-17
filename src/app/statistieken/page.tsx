@@ -4,8 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { HomeIcon } from "@heroicons/react/24/solid";
 
+type PlayerStats = {
+  playerId: number;
+  name: string;
+  trainingTotal: number;
+  trainingPresent: number;
+  matchTotal: number;
+  matchPresent: number;
+  goals: number;
+  assists: number;
+};
+
 export default function StatistiekenPage() {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState<PlayerStats[]>([]);
 
   useEffect(() => {
     async function load() {

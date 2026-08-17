@@ -10,28 +10,28 @@ interface PageProps {
   };
 }
 
-interface Match {
+interface Training {
   id: number;
   date: string;
-  opponent: string | null;
-  location: string | null;
+  startTime: string;
+  endTime: string;
 }
 
-export default function WedstrijdDetail({ params }: PageProps) {
+export default function TrainingDetail({ params }: PageProps) {
   const { id } = params;
 
-  const [match, setMatch] = useState<Match | null>(null);
+  const [training, setTraining] = useState<Training | null>(null);
 
   useEffect(() => {
     async function load() {
-      const res = await fetch(`/api/match/${id}`);
+      const res = await fetch(`/api/training/${id}`);
       const data = await res.json();
-      setMatch(data);
+      setTraining(data);
     }
     load();
   }, [id]);
 
-  if (!match) return <p>Laden...</p>;
+  if (!training) return <p>Laden...</p>;
 
   return (
     <main className="p-4">
@@ -39,12 +39,7 @@ export default function WedstrijdDetail({ params }: PageProps) {
         <HomeIcon className="w-7 h-7 text-blue-600" />
       </Link>
 
-      <h1 className="text-xl font-bold mt-4">
-        Wedstrijd tegen {match.opponent ?? "Onbekend"}
-      </h1>
-
-      <p className="mt-2">Datum: {match.date}</p>
-      <p>Locatie: {match.location ?? "Onbekend"}</p>
+      <h1 className="text-xl font-bold">Training op {training.date}</h1>
     </main>
   );
 }
