@@ -2,21 +2,26 @@
   "name": "voetbalapp",
   "version": "1.0.0",
   "private": true,
+
   "scripts": {
     "dev": "next dev",
     "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
+
     "postinstall": "prisma generate",
+
     "db:seed": "tsx prisma/seed.ts",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "db:import": "tsx scripts/import-postgres-data.ts",
     "prisma:studio": "prisma studio"
   },
+
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
+
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^5.18.0",
@@ -24,6 +29,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
+
   "devDependencies": {
     "@types/node": "20.14.12",
     "@types/react": "18.3.3",

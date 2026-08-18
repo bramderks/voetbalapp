@@ -1,88 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import TeamBadge from "@/components/TeamBadge";
+import NavButton from "@/components/NavButton";
 
-type AttendanceItem = {
-  present: boolean;
-};
-
-export default function Dashboard() {
-  const [players, setPlayers] = useState(0);
-  const [trainings, setTrainings] = useState(0);
-  const [matches, setMatches] = useState(0);
-  const [attendanceRate, setAttendanceRate] = useState<number | null>(null);
-
-  async function load() {
-    // Spelers
-    const pRes = await fetch("/api/players/list");
-    const pData = await pRes.json();
-    setPlayers(pData.length);
-
-    // Trainingen
-    const tRes = await fetch("/api/training/list");
-    const tData = await tRes.json();
-    setTrainings(tData.length);
-
-    // Wedstrijden
-    const mRes = await fetch("/api/match/list").catch(() => null);
-    const mData = mRes ? await mRes.json() : [];
-    setMatches(mData.length);
-
-    // Opkomstpercentage
-    const aRes = await fetch("/api/attendance/all").catch(() => null);
-    if (aRes) {
-      const aData: AttendanceItem[] = await aRes.json();
-      const total = aData.length;
-      const present = aData.filter((a) => a.present).length;
-
-      setAttendanceRate(
-        total > 0 ? Math.round((present / total) * 100) : null
-      );
-    }
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
-
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white p-6 flex flex-col items-center">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Dashboard</h1>
+    <main className="min-h-screen bg-black text-white p-6">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md">
+      {/* HEADER */}
+      <header className="flex items-center justify-between mb-10">
+        <TeamBadge />
+        <h1 className="text-3xl font-bold tracking-wide">VOETBAL APP</h1>
+      </header>
 
-        <Link href="/spelers">
-          <div className="p-6 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 transition cursor-pointer">
-            <p className="text-xl font-semibold text-slate-900">Spelers</p>
-            <p className="text-3xl font-bold text-blue-600 mt-2">{players}</p>
-          </div>
-        </Link>
+      {/* INFO CARDS */}
+      <section className="space-y-4">
+        <div className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg">
+          <h2 className="text-xl font-bold mb-1">Volgende training</h2>
+          <p className="text-neutral-300">
+            Dinsdag 18 augustus 2026 — 15:00–16:00
+          </p>
+        </div>
 
-        <Link href="/trainingen">
-          <div className="p-6 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 transition cursor-pointer">
-            <p className="text-xl font-semibold text-slate-900">Trainingen</p>
-            <p className="text-3xl font-bold text-green-600 mt-2">{trainings}</p>
-          </div>
-        </Link>
+        <div className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg">
+          <h2 className="text-xl font-bold mb-1">Volgende wedstrijd</h2>
+          <p className="text-neutral-300">
+            Zaterdag 6 september 2026 — 10:00–11:00
+          </p>
+        </div>
+      </section>
 
-        <Link href="/wedstrijden">
-          <div className="p-6 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 transition cursor-pointer">
-            <p className="text-xl font-semibold text-slate-900">Wedstrijden</p>
-            <p className="text-3xl font-bold text-orange-600 mt-2">{matches}</p>
-          </div>
-        </Link>
+      {/* GRID NAVIGATIE */}
+      <section className="grid grid-cols-2 gap-4 mt-10">
+        <NavButton label="Team" href="/team/1" />
+        <NavButton label="Trainingen" href="/team/1/trainingen" />
+        <NavButton label="Wedstrijden" href="/team/1/wedstrijden" />
+        <NavButton label="Spelers" href="/team/1/spelers" />
+        <NavButton label="Statistieken" href="/team/1/statistieken" />
+      </section>
 
-        <Link href="/statistieken">
-          <div className="p-6 bg-gray-100 rounded-xl shadow-md hover:bg-gray-200 transition cursor-pointer">
-            <p className="text-xl font-semibold text-slate-900">Opkomst</p>
-            <p className="text-3xl font-bold text-purple-600 mt-2">
-              {attendanceRate !== null ? `${attendanceRate}%` : "—"}
-            </p>
-          </div>
-        </Link>
-
-      </div>
     </main>
   );
 }

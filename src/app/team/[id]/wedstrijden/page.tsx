@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import TeamBadge from "@/components/TeamBadge";
+import Toggle from "@/components/Toggle";
 
 interface Match {
   id: number;
@@ -14,103 +16,253 @@ interface Match {
 interface Player {
   id: number;
   name: string;
+  present: boolean | null;
+  goals: number;
+  assists: number;
 }
 
 interface Props {
-  params: { teamId: string };
+  params: { id: string };
 }
 
 export default function WedstrijdenPage({ params }: Props) {
-  const teamId = Number(params.teamId);
+  const teamId = Number(params.id);
+
   const [matches, setMatches] = useState<Match[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   useEffect(() => {
     const load = async () => {
+      // Wedstrijden laden
       const mRes = await fetch("/api/match");
       const matchesData = await mRes.json();
       setMatches(matchesData);
 
+      // Spelers laden
       const pRes = await fetch("/api/teamPlayers?teamId=" + teamId);
       const playersData = await pRes.json();
-      setPlayers(playersData);
+
+      const enriched = playersData.map((p: any) => ({
+        ...p,
+        present: null,
+        goals: 0,
+        assists: 0,
+      }));
+
+      setPlayers(enriched);
     };
+
     load();
   }, [teamId]);
 
-  const toggleAttendance = async (matchId: number, playerId: number, present: boolean) => {
+  const toggleAttendance = async (
+    matchId: number,
+    playerId: number,
+    present: boolean | null
+  ) => {
     await fetch("/api/attendance", {
       method: "POST",
       body: JSON.stringify({ activityId: matchId, playerId, present }),
     });
+
+    setPlayers((prev) =>
+      prev.map((p) =>
+        p.id === playerId ? { ...p, present } : p
+      )
+    );
   };
 
-  const updateStats = async (matchId: number, playerId: number, goals: number, assists: number) => {
+  const updateStats = async (
+    matchId: number,
+    playerId: number,
+    goals: number,
+    assists: number
+  ) => {
     await fetch("/api/matchstats", {
       method: "POST",
       body: JSON.stringify({ activityId: matchId, playerId, goals, assists }),
     });
+
+    setPlayers((prev) =>
+      prev.map((p) =>
+        p.id === playerId
+          ? {
+              ...p,
+              goals: p.goals + goals,
+              assists: p.assists + assists,
+            }
+          : p
+      )
+    );
   };
 
   return (
-    <main style={{ padding: 16 }}>
-      <h1>Wedstrijden</h1>
+    <main className="min-h-screen bg-black text-white p-6">
 
-      <h2>Overzicht</h2>
-      <ul>
-        {matches.map((m) => (
-          <li key={m.id}>
-            <button onClick={() => setSelectedMatch(m)}>
-              {m.date} {m.opponent ?? "Onbekende tegenstander"}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {/* HEADER */}
+      <div className="mb-6">
+        <TeamBadge />
+      </div>
 
+      <h1 className="text-3xl font-bold tracking-wide mb-8">Wedstrijden</h1>
+
+      {/* OVERZICHT */}
+      <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg mb-10">
+        <h2 className="text-xl font-bold mb-4">Overzicht</h2>
+
+        <ul className="space-y-3">
+          {matches.map((m) => (
+            <li key={m.id}>
+              <button
+                onClick={() => setSelectedMatch(m)}
+                className="
+                  w-full 
+                  text-left 
+                  bg-black 
+                  border border-white 
+                  rounded-xl 
+                  p-3 
+                  hover:border-green-400 
+                  hover:bg-neutral-800 
+                  transition
+                "
+              >
+                <p className="font-bold text-lg">
+                  {new Date(m.date).toLocaleDateString("nl-NL", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+
+                <p className="text-neutral-300">
+                  {m.opponent ?? "Onbekende tegenstander"} —{" "}
+                  {m.startTime}–{m.endTime}
+                </p>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* DETAIL */}
       {selectedMatch && (
-        <section style={{ marginTop: 24 }}>
-          <h2>Wedstrijd {selectedMatch.date}</h2>
-          <p>
-            Tegenstander: {selectedMatch.opponent} – Locatie: {selectedMatch.location}
+        <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg">
+          <h2 className="text-xl font-bold mb-4">
+            Wedstrijd{" "}
+            {new Date(selectedMatch.date).toLocaleDateString("nl-NL", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </h2>
+
+          <p className="text-neutral-300 mb-6">
+            Tegenstander:{" "}
+            <span className="font-bold text-white">
+              {selectedMatch.opponent ?? "Onbekend"}
+            </span>{" "}
+            — Locatie:{" "}
+            <span className="font-bold text-white">
+              {selectedMatch.location ?? "Onbekend"}
+            </span>
           </p>
-          <ul>
-            {players.map((p) => (
-              <li key={p.id}>
-                {p.name}{" "}
-                <button
-                  onClick={() =>
-                    toggleAttendance(selectedMatch.id, p.id, true)
-                  }
-                >
-                  Aanwezig
-                </button>
-                <button
-                  onClick={() =>
-                    toggleAttendance(selectedMatch.id, p.id, false)
-                  }
-                >
-                  Afwezig
-                </button>
-                <button
-                  onClick={() =>
-                    updateStats(selectedMatch.id, p.id, 1, 0)
-                  }
-                >
-                  +1 goal
-                </button>
-                <button
-                  onClick={() =>
-                    updateStats(selectedMatch.id, p.id, 0, 1)
-                  }
-                >
-                  +1 assist
-                </button>
-              </li>
-            ))}
-          </ul>
+
+          {/* TABEL */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-neutral-700">
+                  <th className="py-3 font-bold">Speler</th>
+                  <th className="py-3 font-bold">Goals</th>
+                  <th className="py-3 font-bold">Assists</th>
+                  <th className="py-3 font-bold">Aanwezig</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {players.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="border-b border-neutral-800 hover:bg-neutral-800 transition"
+                  >
+                    {/* Naam */}
+                    <td className="py-3 font-bold">{p.name}</td>
+
+                    {/* Goals */}
+                    <td className="py-3">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() =>
+                            updateStats(selectedMatch.id, p.id, -1, 0)
+                          }
+                          className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded-xl font-bold"
+                        >
+                          –
+                        </button>
+
+                        <span className="text-green-400 font-bold">
+                          {p.goals}
+                        </span>
+
+                        <button
+                          onClick={() =>
+                            updateStats(selectedMatch.id, p.id, 1, 0)
+                          }
+                          className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded-xl font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Assists */}
+                    <td className="py-3">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() =>
+                            updateStats(selectedMatch.id, p.id, 0, -1)
+                          }
+                          className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded-xl font-bold"
+                        >
+                          –
+                        </button>
+
+                        <span className="text-blue-400 font-bold">
+                          {p.assists}
+                        </span>
+
+                        <button
+                          onClick={() =>
+                            updateStats(selectedMatch.id, p.id, 0, 1)
+                          }
+                          className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded-xl font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Aanwezigheid */}
+                    <td className="py-3">
+                      <Toggle
+                        value={p.present}
+                        onChange={(val) =>
+                          toggleAttendance(selectedMatch.id, p.id, val)
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
+
     </main>
   );
 }

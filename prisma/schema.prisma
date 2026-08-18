@@ -3,64 +3,140 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+// ============================================================
+// TEAM
+// ============================================================
 
 model Team {
-  id      Int      @id @default(autoincrement())
-  name    String
-  players Player[]
+  id     Int     @id @default(autoincrement())
+  name   String
+  season String?
+
+  players    Player[]
+  activities Activity[]
 }
+
+// ============================================================
+// PLAYER
+// ============================================================
 
 model Player {
-  id          Int          @id @default(autoincrement())
-  name        String
-  teamId      Int
-  attendances Attendance[]
-  matchStats  MatchStat[]
-  team        Team         @relation(fields: [teamId], references: [id])
+  id     Int    @id @default(autoincrement())
+  name   String
+  teamId Int
+
+  team       Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  stats      PlayerStats[]
+  attendance Attendance[]
+  matchStats MatchStat[]
 }
+
+// ============================================================
+// PLAYER STATS
+//
+// BESTAANDE TABEL - voorlopig behouden.
+//
+// Deze tabel wordt straks niet meer gebruikt als bron voor de
+// nieuwe statistieken. We verwijderen hem pas nadat de nieuwe
+// statistiekenstructuur volledig werkt.
+// ============================================================
+
+model PlayerStats {
+  id       Int @id @default(autoincrement())
+  playerId Int
+  goals    Int @default(0)
+  assists  Int @default(0)
+  present  Int @default(0)
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+}
+
+// ============================================================
+// ACTIVITY
+//
+// Centrale tabel voor:
+// TRAINING
+// MATCH
+//
+// date      = YYYY-MM-DD
+// startTime = HH:mm
+// endTime   = HH:mm
+// ============================================================
 
 model Activity {
-  id          Int          @id @default(autoincrement())
-  date        String
-  type        String
-  startTime   String
-  endTime     String
-  opponent    String?
-  location    String?
-  status      String       @default("registered")
-  attendances Attendance[]
-  matchStats  MatchStat[]
+  id   Int    @id @default(autoincrement())
+  type String
+
+  date      String
+  startTime String
+  endTime   String
+
+  // Wedstrijd
+  opponent String?
+  home     Boolean?
+
+  // Vergrendeling
+  locked   Boolean   @default(false)
+  lockedAt DateTime?
+
+  teamId Int
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  attendance Attendance[]
+  matchStats MatchStat[]
+
+  @@index([teamId])
+  @@index([date])
+  @@index([type])
+  @@index([locked])
 }
+
+// ============================================================
+// ATTENDANCE
+//
+// Eén aanwezigheid per speler per activiteit.
+//
+// De unieke beperking voegen we pas toe nadat we bestaande
+// dubbele records hebben gecontroleerd.
+// ============================================================
 
 model Attendance {
-  id         Int      @id @default(autoincrement())
-  activityId Int
+  id         Int     @id @default(autoincrement())
   playerId   Int
-  present    Boolean  @default(false)
-  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  activityId Int
+  present    Boolean @default(false)
 
-  @@unique([activityId, playerId], name: "activityId_playerId")
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([activityId])
+  @@index([playerId])
 }
+
+// ============================================================
+// MATCH STATISTICS
+//
+// Alleen voor wedstrijden.
+// ============================================================
 
 model MatchStat {
-  id         Int      @id @default(autoincrement())
-  activityId Int
+  id         Int @id @default(autoincrement())
   playerId   Int
-  goals      Int      @default(0)
-  assists    Int      @default(0)
-  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  activityId Int
 
-  @@unique([activityId, playerId])
-}
+  goals   Int @default(0)
+  assists Int @default(0)
 
-model playing_with_neon {
-  id    Int    @id @default(autoincrement())
-  name  String
-  value Float? @db.Real
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, activityId])
+  @@index([activityId])
+  @@index([playerId])
 }

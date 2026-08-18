@@ -1,122 +1,129 @@
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 
-async function main() {
-  // 1. Team
-  const team = await prisma.team.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      id: 1,
-      name: "SCE JO8-1",
-    },
-  });
+//
+// SEIZOEN GENERATOR
+//
+function generateSeason(startDate: Date, endDate: Date, teamId: number) {
+  const activities = [];
+  let current = new Date(startDate);
 
-// 2. Spelers (jouw echte namen)
-const spelersNamen = [
-  "Tobi",
-  "Joa",
-  "Muad",
-  "Mahmoud",
-  "Eymen",
-  "Romy",
-  "Jamie",
-  "Moussa",
-];
+  while (current <= endDate) {
+    const day = current.getDay(); // 3 = woensdag, 6 = zaterdag
 
-// Eerst alle spelers verwijderen
-await prisma.player.deleteMany({});
+    // TRAINING — elke woensdag
+    if (day === 3) {
+      activities.push({
+        type: "TRAINING",
+        date: current.toISOString(),
+        startTime: "15:00",
+        endTime: "16:00",
+        teamId,
+      });
+    }
 
-// Daarna opnieuw aanmaken
-for (const name of spelersNamen) {
-  await prisma.player.create({
-    data: {
-      name,
-      teamId: team.id,
-    },
-  });
+    // WEDSTRIJD — elke zaterdag
+    if (day === 6) {
+      activities.push({
+        type: "MATCH",
+        date: current.toISOString(),
+        startTime: "10:00",
+        endTime: "11:30",
+        opponent: null,
+        home: null,
+        teamId,
+      });
+    }
+
+    current.setDate(current.getDate() + 1);
+  }
+
+  return activities;
 }
 
+async function main() {
+  console.log("🌱 Seeding database...");
 
-  // 3. Trainingen
-  // Eerst alles leeggooien
-  await prisma.activity.deleteMany({ where: { type: "training" } });
-
-  // Dinsdag 18 augustus 2026
-  await prisma.activity.create({
+  //
+  // TEAM
+  //
+  const team = await prisma.team.create({
     data: {
-      type: "training",
-      date: "2026-08-18",
-      startTime: "15:00",
-      endTime: "16:00",
+      name: "SCE JO11-1",
+      season: "26-27",
     },
   });
 
-  // Donderdag 20 augustus 2026
-  await prisma.activity.create({
-    data: {
-      type: "training",
-      date: "2026-08-20",
-      startTime: "15:00",
-      endTime: "16:00",
-    },
+  //
+  // PLAYERS
+  //
+  const playerNames = [
+    "Eymen",
+    "Jamie",
+    "Joa",
+    "Mahmoud",
+    "Moussa",
+    "Muad",
+    "Romy",
+    "Tobi",
+  ];
+
+  await prisma.player.createMany({
+    data: playerNames.map((name) => ({
+      name,
+      teamId: team.id,
+    })),
   });
 
-  // Daarna iedere woensdag 15:00–16:00 tot eind juni 2027
-  const endTrainingDate = new Date(2027, 5, 30); // 30 juni 2027
-  let d = new Date(2026, 7, 21); // start rond eind augustus 2026
+  const players = await prisma.player.findMany();
 
-  while (d <= endTrainingDate) {
-    if (d.getDay() === 3) {
-      const iso = d.toISOString().split("T")[0];
-      await prisma.activity.create({
-        data: {
-          type: "training",
-          date: iso,
-          startTime: "15:00",
-          endTime: "16:00",
-        },
-      });
-    }
-    d.setDate(d.getDate() + 1);
-  }
+  //
+  // ACTIVITEITEN (trainingen + wedstrijden automatisch)
+  //
+  const seasonActivities = generateSeason(
+    new Date("2026-08-24"),
+    new Date("2027-06-30"),
+    team.id
+  );
 
-  // 4. Wedstrijden
-  // Eerst alle wedstrijden leeggooien
-  await prisma.activity.deleteMany({ where: { type: "match" } });
+  await prisma.activity.createMany({
+    data: seasonActivities,
+  });
 
-  // Wedstrijden iedere zaterdag 10:00–11:00 van september 2026 t/m juni 2027
-  const startMatchDate = new Date(2026, 8, 1); // 1 september 2026
-  const endMatchDate = new Date(2027, 5, 30);  // 30 juni 2027
+  const activities = await prisma.activity.findMany();
 
-  let m = new Date(startMatchDate);
+  //
+  // PLAYER STATS
+  //
+  await prisma.playerStats.createMany({
+    data: players.map((p) => ({
+      playerId: p.id,
+      goals: 0,
+      assists: 0,
+      present: 0,
+    })),
+  });
 
-  while (m <= endMatchDate) {
-    if (m.getDay() === 6) {
-      const iso = m.toISOString().split("T")[0];
-      await prisma.activity.create({
-        data: {
-          type: "match",
-          date: iso,
-          startTime: "10:00",
-          endTime: "11:00",
-          location: "Sportpark SCE",
-          opponent: "Tegenstander",
-        },
-      });
-    }
-    m.setDate(m.getDate() + 1);
-  }
+  //
+  // ATTENDANCE (voor elke speler × elke activiteit)
+  //
+  await prisma.attendance.createMany({
+    data: activities.flatMap((activity) =>
+      players.map((player) => ({
+        playerId: player.id,
+        activityId: activity.id,
+        present: false,
+      }))
+    ),
+  });
 
-  console.log("Seed klaar: team, spelers, trainingen, wedstrijden.");
+  console.log("🌱 Seed completed!");
 }
 
 main()
+  .then(() => prisma.$disconnect())
   .catch((e) => {
     console.error(e);
+    prisma.$disconnect();
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });

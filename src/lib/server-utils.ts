@@ -1,72 +1,148 @@
 import prisma from "@/lib/prisma";
 
-
 export async function buildStats() {
   const team = await prisma.team.findFirst({
-    include: { players: true },
+    include: {
+      players: true,
+    },
   });
+
+  if (!team) {
+    return {
+      team: {
+        totalTrainings: 0,
+        trainingsWithAttendance: 0,
+        trainingAttendanceRate: 0,
+        totalMatches: 0,
+        matchesWithAttendance: 0,
+        matchAttendanceRate: 0,
+        totalGoals: 0,
+        totalAssists: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+      },
+      players: [],
+    };
+  }
 
   const activities = await prisma.activity.findMany({
+    where: {
+      teamId: team.id,
+    },
     include: {
-      attendances: true,
+      attendance: true,
       matchStats: true,
+    },
+    orderBy: {
+      date: "asc",
     },
   });
 
-  const trainings = activities.filter((a) => a.type === 'TRAINING');
-  const matches = activities.filter((a) => a.type === 'MATCH');
+  const trainings = activities.filter(
+    (activity) => activity.type === "TRAINING"
+  );
+
+  const matches = activities.filter(
+    (activity) => activity.type === "MATCH"
+  );
 
   const playerRecords = await prisma.player.findMany({
+    where: {
+      teamId: team.id,
+    },
     include: {
-      attendances: true,
+      attendance: true,
       matchStats: true,
     },
-    where: { teamId: team?.id ?? 1 },
+    orderBy: {
+      name: "asc",
+    },
   });
 
-  const totalGoals = activities.reduce(
+  const totalGoals = matches.reduce(
     (sum, activity) =>
-      sum + activity.matchStats.reduce((n, a) => n + a.goals, 0),
+      sum +
+      activity.matchStats.reduce(
+        (matchSum, stat) => matchSum + stat.goals,
+        0
+      ),
     0
   );
 
-  const totalAssists = activities.reduce(
+  const totalAssists = matches.reduce(
     (sum, activity) =>
-      sum + activity.matchStats.reduce((n, a) => n + a.assists, 0),
+      sum +
+      activity.matchStats.reduce(
+        (matchSum, stat) => matchSum + stat.assists,
+        0
+      ),
     0
   );
 
   const totalTrainings = trainings.length;
-  const trainingsWithAttendance = trainings.filter((t) => t.attendances.length > 0).length;
+
+  const trainingsWithAttendance = trainings.filter(
+    (training) => training.attendance.length > 0
+  ).length;
+
   const trainingAttendanceCount = trainings.reduce(
-    (sum, t) => sum + t.attendances.filter((a) => a.present).length,
+    (sum, training) =>
+      sum +
+      training.attendance.filter(
+        (attendance) => attendance.present
+      ).length,
     0
   );
+
   const totalTrainingSlots = trainings.reduce(
-    (sum, t) => sum + t.attendances.length,
+    (sum, training) => sum + training.attendance.length,
     0
   );
+
   const trainingAttendanceRate = totalTrainingSlots
-    ? Math.round((trainingAttendanceCount / totalTrainingSlots) * 100)
+    ? Math.round(
+        (trainingAttendanceCount / totalTrainingSlots) * 100
+      )
     : 0;
 
   const totalMatches = matches.length;
-  const matchesWithAttendance = matches.filter((m) => m.attendances.length > 0).length;
+
+  const matchesWithAttendance = matches.filter(
+    (match) => match.attendance.length > 0
+  ).length;
+
   const matchAttendanceCount = matches.reduce(
-    (sum, m) => sum + m.attendances.filter((a) => a.present).length,
+    (sum, match) =>
+      sum +
+      match.attendance.filter(
+        (attendance) => attendance.present
+      ).length,
     0
   );
+
   const totalMatchSlots = matches.reduce(
-    (sum, m) => sum + m.attendances.length,
+    (sum, match) => sum + match.attendance.length,
     0
   );
+
   const matchAttendanceRate = totalMatchSlots
-    ? Math.round((matchAttendanceCount / totalMatchSlots) * 100)
+    ? Math.round(
+        (matchAttendanceCount / totalMatchSlots) * 100
+      )
     : 0;
 
-  const wins = matches.filter((m) => (m.status ?? '').toLowerCase().includes('win')).length;
-  const draws = matches.filter((m) => (m.status ?? '').toLowerCase().includes('draw')).length;
-  const losses = matches.filter((m) => (m.status ?? '').toLowerCase().includes('loss')).length;
+  /*
+   * Wedstrijdresultaten worden op dit moment niet meer uit
+   * Activity.status gehaald, omdat status geen onderdeel meer
+   * is van het nieuwe datamodel.
+   *
+   * Deze blijven voorlopig op 0 totdat we de nieuwe
+   * wedstrijdresultaat-structuur toevoegen.
+   */
+  const wins = 0;
+  const draws = 0;
+  const losses = 0;
 
   return {
     team: {
@@ -82,50 +158,73 @@ export async function buildStats() {
       draws,
       losses,
     },
+
     players: playerRecords.map((player) => {
-      const playerTrainings = activities.filter(
-        (a) =>
-          a.type === 'TRAINING' &&
-          a.attendances.some((att) => att.playerId === player.id)
-      );
+      const playerTrainingAttendances =
+        player.attendance.filter((attendance) => {
+          const activity = activities.find(
+            (item) => item.id === attendance.activityId
+          );
 
-      const playerMatches = activities.filter(
-        (a) =>
-          a.type === 'MATCH' &&
-          a.attendances.some((att) => att.playerId === player.id)
-      );
+          return activity?.type === "TRAINING";
+        });
 
-      const playerTrainingAttendances = player.attendances.filter((a) =>
-        activities.find((ac) => ac.id === a.activityId && ac.type === 'TRAINING')
-      );
+      const playerMatchAttendances =
+        player.attendance.filter((attendance) => {
+          const activity = activities.find(
+            (item) => item.id === attendance.activityId
+          );
 
-      const playerMatchAttendances = player.attendances.filter((a) =>
-        activities.find((ac) => ac.id === a.activityId && ac.type === 'MATCH')
-      );
+          return activity?.type === "MATCH";
+        });
+
+      const trainingPresent =
+        playerTrainingAttendances.filter(
+          (attendance) => attendance.present
+        ).length;
+
+      const matchPresent =
+        playerMatchAttendances.filter(
+          (attendance) => attendance.present
+        ).length;
 
       return {
         id: player.id,
         name: player.name,
-        trainingCount: playerTrainings.length,
-        trainingAttendance: playerTrainingAttendances.filter((a) => a.present).length,
-        trainingAttendanceRate: playerTrainingAttendances.length
-          ? Math.round(
-              (playerTrainingAttendances.filter((a) => a.present).length /
-                playerTrainingAttendances.length) *
-                100
-            )
-          : 0,
-        matchCount: playerMatches.length,
-        matchAttendance: playerMatchAttendances.filter((a) => a.present).length,
-        matchAttendanceRate: playerMatchAttendances.length
-          ? Math.round(
-              (playerMatchAttendances.filter((a) => a.present).length /
-                playerMatchAttendances.length) *
-                100
-            )
-          : 0,
-        goals: player.matchStats.reduce((sum, stat) => sum + stat.goals, 0),
-        assists: player.matchStats.reduce((sum, stat) => sum + stat.assists, 0),
+
+        trainingCount: playerTrainingAttendances.length,
+        trainingAttendance: trainingPresent,
+
+        trainingAttendanceRate:
+          playerTrainingAttendances.length > 0
+            ? Math.round(
+                (trainingPresent /
+                  playerTrainingAttendances.length) *
+                  100
+              )
+            : 0,
+
+        matchCount: playerMatchAttendances.length,
+        matchAttendance: matchPresent,
+
+        matchAttendanceRate:
+          playerMatchAttendances.length > 0
+            ? Math.round(
+                (matchPresent /
+                  playerMatchAttendances.length) *
+                  100
+              )
+            : 0,
+
+        goals: player.matchStats.reduce(
+          (sum, stat) => sum + stat.goals,
+          0
+        ),
+
+        assists: player.matchStats.reduce(
+          (sum, stat) => sum + stat.assists,
+          0
+        ),
       };
     }),
   };

@@ -2,10 +2,179 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   BASIS
+   ============================================================ */
+
 html,
 body {
   margin: 0;
   padding: 0;
-  background: white;
-  color: #1e293b;
+  min-height: 100%;
+  background: #f5f7f5;
+  color: #17211b;
+}
+
+body {
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ============================================================
+   KLEUREN
+   ============================================================ */
+
+:root {
+  --app-green: #16803c;
+  --app-green-dark: #116631;
+  --app-green-light: #e9f7ee;
+
+  --app-background: #f5f7f5;
+  --app-card: #ffffff;
+
+  --app-text: #17211b;
+  --app-text-muted: #647067;
+
+  --app-border: #e1e7e2;
+
+  --app-danger: #dc2626;
+  --app-danger-light: #fef2f2;
+}
+
+/* ============================================================
+   SELECTIE
+   ============================================================ */
+
+::selection {
+  background: var(--app-green);
+  color: white;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #eef1ee;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5cec7;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #aab6ad;
+}
+
+/* ============================================================
+   ALGEMENE COMPONENT-STIJLEN
+   ============================================================ */
+
+@layer components {
+  .app-page {
+    min-height: 100vh;
+    background: var(--app-background);
+    color: var(--app-text);
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .app-card {
+    background: var(--app-card);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(23, 33, 27, 0.06);
+  }
+
+  .app-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .app-button:active {
+    transform: translateY(1px);
+  }
+
+  .app-button-primary {
+    background: var(--app-green);
+    color: white;
+    box-shadow: 0 3px 8px rgba(22, 128, 60, 0.2);
+  }
+
+  .app-button-primary:hover {
+    background: var(--app-green-dark);
+  }
+
+  .app-button-secondary {
+    background: white;
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+  }
+
+  .app-button-secondary:hover {
+    border-color: var(--app-green);
+    color: var(--app-green);
+  }
+
+  .app-button-danger {
+    background: var(--app-danger);
+    color: white;
+  }
+
+  .app-button-danger:hover {
+    background: #b91c1c;
+  }
+
+  .app-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 13px;
+    background: white;
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: 10px;
+    outline: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .app-input:focus {
+    border-color: var(--app-green);
+    box-shadow: 0 0 0 3px rgba(22, 128, 60, 0.12);
+  }
+}
+
+/* ============================================================
+   MOBIEL
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .app-container {
+    padding: 16px;
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import TeamBadge from "@/components/TeamBadge";
 
 interface PlayerStats {
   id: number;
@@ -29,30 +30,55 @@ export default function StatistiekenPage({ params }: Props) {
   }, [teamId]);
 
   return (
-    <main style={{ padding: 16 }}>
-      <h1>Statistieken</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Speler</th>
-            <th>Training opkomst</th>
-            <th>Wedstrijd opkomst</th>
-            <th>Goals</th>
-            <th>Assists</th>
-          </tr>
-        </thead>
-        <tbody>
-          {stats.map((s) => (
-            <tr key={s.id}>
-              <td>{s.name}</td>
-              <td>{s.trainingAttendances}</td>
-              <td>{s.matchAttendances}</td>
-              <td>{s.goals}</td>
-              <td>{s.assists}</td>
+    <main className="min-h-screen bg-black text-white p-6">
+
+      {/* HEADER */}
+      <div className="mb-6">
+        <TeamBadge />
+      </div>
+
+      {/* TITEL */}
+      <h1 className="text-3xl font-bold tracking-wide mb-8">Statistieken</h1>
+
+      {/* TABEL */}
+      <div
+        className="
+          bg-neutral-900 
+          p-5 
+          rounded-xl 
+          border border-white 
+          shadow-lg 
+          overflow-x-auto
+        "
+      >
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-neutral-700">
+              <th className="py-3 font-bold">Speler</th>
+              <th className="py-3 font-bold">Training opkomst</th>
+              <th className="py-3 font-bold">Wedstrijd opkomst</th>
+              <th className="py-3 font-bold">Goals</th>
+              <th className="py-3 font-bold">Assists</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {stats.map((s) => (
+              <tr
+                key={s.id}
+                className="border-b border-neutral-800 hover:bg-neutral-800 transition"
+              >
+                <td className="py-3 font-bold">{s.name}</td>
+                <td className="py-3 text-neutral-300">{s.trainingAttendances}</td>
+                <td className="py-3 text-neutral-300">{s.matchAttendances}</td>
+                <td className="py-3 text-green-400 font-bold">{s.goals}</td>
+                <td className="py-3 text-blue-400 font-bold">{s.assists}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
     </main>
   );
 }

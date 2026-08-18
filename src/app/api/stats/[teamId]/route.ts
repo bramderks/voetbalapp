@@ -12,7 +12,7 @@ export async function GET(_req: Request, { params }: Params) {
   const players = await prisma.player.findMany({
     where: { teamId },
     include: {
-      attendances: {
+      attendance: {
         include: { activity: true },
       },
       matchStats: true,
@@ -20,11 +20,11 @@ export async function GET(_req: Request, { params }: Params) {
   });
 
   const result = players.map((player) => {
-    const trainingAttendances = player.attendances.filter(
+    const trainingAttendances = player.attendance.filter(
       (a) => a.activity.type === "TRAINING" && a.present
     ).length;
 
-    const matchAttendances = player.attendances.filter(
+    const matchAttendances = player.attendance.filter(
       (a) => a.activity.type === "MATCH" && a.present
     ).length;
 

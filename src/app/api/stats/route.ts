@@ -1,55 +1,131 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
-  const players = await prisma.player.findMany();
+  try {
+    // ==========================================================
+    // SPELERS
+    // ==========================================================
 
-  const activiteiten = await prisma.activity.findMany({
-    include: {
-      attendances: true,
-      matchStats: true,
-    },
-  });
+    const players = await prisma.player.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
 
-  const result = players.map((p) => {
-    const trainingTotal = activiteiten.filter((a) => a.type === "TRAINING").length;
-    const trainingPresent = activiteiten.filter(
-      (a) =>
-        a.type === "TRAINING" &&
-        a.attendances.some((x) => x.playerId === p.id && x.present)
-    ).length;
+    // ==========================================================
+    // ALLEEN GESLOTEN ACTIVITEITEN
+    //
+    // Een activiteit telt pas mee voor de definitieve
+    // statistieken wanneer deze is vergrendeld.
+    // ==========================================================
 
-    const matchTotal = activiteiten.filter((a) => a.type === "MATCH").length;
-    const matchPresent = activiteiten.filter(
-      (a) =>
-        a.type === "MATCH" &&
-        a.matchStats.some((x) => x.playerId === p.id)
-    ).length;
+    const activiteiten = await prisma.activity.findMany({
+      where: {
+        locked: true,
+      },
+      include: {
+        attendance: true,
+        matchStats: true,
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
 
-    const goals = activiteiten.reduce((acc, a) => {
-      if (a.type !== "MATCH") return acc;
-      const s = a.matchStats.find((x) => x.playerId === p.id);
-      return acc + (s?.goals || 0);
-    }, 0);
+    // ==========================================================
+    // STATISTIEKEN PER SPELER
+    // ==========================================================
 
-    const assists = activiteiten.reduce((acc, a) => {
-      if (a.type !== "MATCH") return acc;
-      const s = a.matchStats.find((x) => x.playerId === p.id);
-      return acc + (s?.assists || 0);
-    }, 0);
+    const result = players.map((player) => {
+      // --------------------------------------------------------
+      // TRAININGEN
+      // --------------------------------------------------------
 
-    return {
-      playerId: p.id,
-      name: p.name,
-      trainingTotal,
-      trainingPresent,
-      matchTotal,
-      matchPresent,
-      goals,
-      assists,
-    };
-  });
+      const trainingen = activiteiten.filter(
+        (activity) => activity.type === "TRAINING"
+      );
 
-  return NextResponse.json(result);
+      const trainingPresent = trainingen.filter((activity) =>
+        activity.attendance.some(
+          (attendance) =>
+            attendance.playerId === player.id &&
+            attendance.present === true
+        )
+      ).length;
+
+      // --------------------------------------------------------
+      // WEDSTRIJDEN
+      // --------------------------------------------------------
+
+      const wedstrijden = activiteiten.filter(
+        (activity) => activity.type === "MATCH"
+      );
+
+      const matchPresent = wedstrijden.filter((activity) =>
+        activity.attendance.some(
+          (attendance) =>
+            attendance.playerId === player.id &&
+            attendance.present === true
+        )
+      ).length;
+
+      // --------------------------------------------------------
+      // GOALS
+        //
+        // Alleen MatchStat-records van gesloten wedstrijden
+        // worden meegenomen.
+        // --------------------------------------------------------
+
+      const goals = wedstrijden.reduce((total, activity) => {
+        const stats = activity.matchStats.find(
+          (stat) => stat.playerId === player.id
+        );
+
+        return total + (stats?.goals ?? 0);
+      }, 0);
+
+      // --------------------------------------------------------
+      // ASSISTS
+      // --------------------------------------------------------
+
+      const assists = wedstrijden.reduce((total, activity) => {
+        const stats = activity.matchStats.find(
+          (stat) => stat.playerId === player.id
+        );
+
+        return total + (stats?.assists ?? 0);
+      }, 0);
+
+      return {
+        playerId: player.id,
+        name: player.name,
+
+        trainingTotal: trainingen.length,
+        trainingPresent,
+
+        matchTotal: wedstrijden.length,
+        matchPresent,
+
+        goals,
+        assists,
+      };
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("GET /api/stats error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Statistieken konden niet worden opgehaald.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
