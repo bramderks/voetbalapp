@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const { name, teamId } = await req.json();
+  const { name } = await req.json();
 
-  const p = await prisma.player.create({
-    data: { name, teamId },
+  const player = await prisma.player.create({
+    data: { name, teamId: 1 },
   });
 
-  return NextResponse.json(p);
+  return NextResponse.json(player);
 }

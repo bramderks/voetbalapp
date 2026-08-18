@@ -1,5 +1,6 @@
 // src/app/wedstrijden/registreren/page.tsx
-import { prisma } from '@/lib/prisma';
+import prisma from "@/lib/prisma";
+
 
 export default async function RegistrerenWedstrijdPage() {
   const wedstrijden = await prisma.activity.findMany({

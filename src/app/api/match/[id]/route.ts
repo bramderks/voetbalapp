@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(req: Request, { params }: RouteParams) {
+export async function GET(
+  request: Request,
+  context: { params: { id: string } }
+) {
   const match = await prisma.activity.findUnique({
-    where: { id: Number(params.id) },
-    include: { matchStats: true },
+    where: { id: Number(context.params.id) },
   });
 
   return NextResponse.json(match);

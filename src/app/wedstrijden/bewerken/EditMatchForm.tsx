@@ -1,5 +1,6 @@
 // src/app/wedstrijden/bewerken/EditMatchForm.tsx
-import { prisma } from '@/lib/prisma';
+import prisma from "@/lib/prisma";
+
 import { redirect } from 'next/navigation';
 
 async function saveMatchDetails(formData: FormData) {

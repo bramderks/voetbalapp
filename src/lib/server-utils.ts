@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/prisma';
+import prisma from "@/lib/prisma";
+
 
 export async function buildStats() {
   const team = await prisma.team.findFirst({

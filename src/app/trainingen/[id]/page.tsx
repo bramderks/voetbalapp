@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { HomeIcon } from "@heroicons/react/24/solid";
-
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
+import TeamBadge from "@/components/TeamBadge";
 
 interface Training {
   id: number;
@@ -17,29 +10,30 @@ interface Training {
   endTime: string;
 }
 
-export default function TrainingDetail({ params }: PageProps) {
-  const { id } = params;
+export default function TrainingDetail({ params }: { params: { id: string } }) {
+  const id = params.id;
 
   const [training, setTraining] = useState<Training | null>(null);
 
   useEffect(() => {
-    async function load() {
-      const res = await fetch(`/api/training/${id}`);
-      const data = await res.json();
-      setTraining(data);
-    }
-    load();
+    fetch(`/api/training/${id}`)
+      .then((r) => r.json())
+      .then(setTraining);
   }, [id]);
 
-  if (!training) return <p>Laden...</p>;
+  if (!training) return <p className="text-white">Laden...</p>;
 
   return (
-    <main className="p-4">
-      <Link href="/home">
-        <HomeIcon className="w-7 h-7 text-blue-600" />
-      </Link>
+    <main className="min-h-screen bg-black text-white p-6">
+      <TeamBadge />
 
-      <h1 className="text-xl font-bold">Training op {training.date}</h1>
+      <h1 className="text-3xl font-bold mt-4">{training.date}</h1>
+      <p className="text-lg">{training.startTime} – {training.endTime}</p>
+
+      <div className="mt-6 bg-neutral-900 p-4 rounded-xl border border-white">
+        <h2 className="text-xl font-bold mb-4">Aanwezigheid</h2>
+        <p className="text-neutral-400">Hier komt jouw toggle‑UI</p>
+      </div>
     </main>
   );
 }

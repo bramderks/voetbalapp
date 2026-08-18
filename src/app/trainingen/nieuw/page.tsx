@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import prisma from "@/lib/prisma";
+
 
 async function createTraining(formData: FormData) {
   'use server';

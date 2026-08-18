@@ -1,29 +1,29 @@
-import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/PageHeader';
+import TeamBadge from "@/components/TeamBadge";
 
-
-export const dynamic = 'force-dynamic';
-
-export default async function SpelersPage() {
-  const players = await prisma.player.findMany({
-    where: { teamId: 1 },
-    orderBy: { name: 'asc' },
-  });
+export default function SpelersPage() {
+  const players = [
+    "Tobi",
+    "Joa",
+    "Muad",
+    "Mahmoud",
+    "Eymen",
+    "Romy",
+    "Jamie",
+    "Moussa",
+  ];
 
   return (
-    <main className="mx-auto max-w-md p-4 pb-10 bg-black min-h-screen text-white">
-      <PageHeader eyebrow="Spelers" title="Selectie" icon="👥" />
+    <main className="min-h-screen bg-black text-white p-6">
+      <h1 className="text-3xl font-bold mb-6">Spelers</h1>
 
-      <div className="space-y-3 mt-4">
-        {players.map((player) => (
+      <div className="space-y-4">
+        {players.map((name) => (
           <div
-            key={player.id}
-            className="rounded-xl bg-white text-black p-4 flex items-center justify-between shadow"
+            key={name}
+            className="bg-neutral-900 p-4 rounded-xl border border-white flex items-center gap-4"
           >
-            <span className="text-lg font-medium">{player.name}</span>
-            <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
-              Speler
-            </span>
+            <TeamBadge />
+            <span className="text-xl">{name}</span>
           </div>
         ))}
       </div>

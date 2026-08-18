@@ -1,21 +1,32 @@
-"use client";
+import TeamBadge from "@/components/TeamBadge";
+import NavButton from "@/components/NavButton";
 
-import Link from "next/link";
-
-export default function Page() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">
-        Kies jouw team
-      </h1>
+    <main className="min-h-screen bg-black text-white p-6">
+      <header className="flex justify-between items-center mb-8">
+        <TeamBadge />
+        <div className="text-2xl font-bold">Menu</div>
+      </header>
 
-      <Link href="/home" className="w-full max-w-sm">
-        <div className="p-6 bg-gray-100 rounded-xl shadow-md text-center cursor-pointer hover:bg-gray-200 transition">
-          <h2 className="text-xl font-semibold text-slate-900">
-            SCE JO8‑1
-          </h2>
+      <section className="space-y-4">
+        <div className="bg-neutral-900 p-4 rounded-xl border border-white">
+          <h2 className="text-xl font-bold">Volgende training</h2>
+          <p>Dinsdag 18 augustus 2026 — 15:00–16:00</p>
         </div>
-      </Link>
+
+        <div className="bg-neutral-900 p-4 rounded-xl border border-white">
+          <h2 className="text-xl font-bold">Volgende wedstrijd</h2>
+          <p>Zaterdag 6 september 2026 — 10:00–11:00</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <NavButton label="Trainingen" href="/trainingen" />
+          <NavButton label="Wedstrijden" href="/wedstrijden" />
+          <NavButton label="Spelers" href="/spelers" />
+          <NavButton label="Team JO8‑1" href="/team" />
+        </div>
+      </section>
     </main>
   );
 }

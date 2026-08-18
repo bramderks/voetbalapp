@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
-  const wedstrijden = await prisma.activity.findMany({
-    where: { type: "MATCH" },
-    orderBy: { date: "desc" },
+  const matches = await prisma.activity.findMany({
+    where: { type: "match" },
+    orderBy: { date: "asc" },
   });
 
-  return NextResponse.json(wedstrijden);
+  return NextResponse.json(matches);
 }

@@ -1,5 +1,6 @@
 // src/lib/utils.ts
-import { prisma } from '@/lib/prisma';
+import prisma from "@/lib/prisma";
+
 
 export async function generateActivities() {
   await prisma.activity.deleteMany();

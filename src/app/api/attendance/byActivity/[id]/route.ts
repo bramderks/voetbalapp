@@ -5,9 +5,9 @@ export async function GET(
   request: Request,
   context: { params: { id: string } }
 ) {
-  const training = await prisma.activity.findUnique({
-    where: { id: Number(context.params.id) },
+  const rows = await prisma.attendance.findMany({
+    where: { activityId: Number(context.params.id) },
   });
 
-  return NextResponse.json(training);
+  return NextResponse.json(rows);
 }

@@ -1,11 +1,17 @@
-import Link from 'next/link';
-import type { ReactNode } from 'react';
+"use client";
 
-export function NavButton({ href, label, color, icon }: { href: string; label: string; color: string; icon?: ReactNode }) {
+interface NavButtonProps {
+  label: string;
+  href: string;
+}
+
+export default function NavButton({ label, href }: NavButtonProps) {
   return (
-    <Link href={href} className={`card flex h-24 flex-col items-center justify-center gap-1 text-center text-lg font-semibold text-white ${color}`}>
-      {icon && <span className="text-2xl leading-none">{icon}</span>}
-      <span>{label}</span>
-    </Link>
+    <a
+      href={href}
+      className="block bg-neutral-900 border border-white rounded-xl p-4 text-center font-bold hover:bg-neutral-800 transition"
+    >
+      {label}
+    </a>
   );
 }
