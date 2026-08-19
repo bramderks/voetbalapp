@@ -5,21 +5,17 @@ import TeamBadge from "@/components/TeamBadge";
 
 export const metadata: Metadata = {
   title: "Voetbalapp",
-  description: "SCE JO8-1 teambeheer",
+  description: "Teambeheer voor voetbalteams",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="nl">
       <body className="min-h-screen bg-[#f5f7f5] text-[#17211b]">
-
-        {/* ==================================================
-            VASTE HEADER
-            ================================================== */}
         <header
           className="
             sticky
@@ -35,35 +31,42 @@ export default function RootLayout({
             className="
               mx-auto
               flex
+              min-h-[76px]
               w-full
-              max-w-6xl
+              max-w-[1100px]
               items-center
               justify-between
+              gap-4
               px-4
-              py-3
               sm:px-6
             "
           >
+            {/* ==================================================
+                TEAMLOGO
+                ================================================== */}
 
-            {/* TEAM */}
             <Link
               href="/"
+              aria-label="Naar Home"
               className="
-                flex
-                items-center
+                min-w-0
                 transition
                 hover:opacity-80
               "
-              aria-label="Naar Home"
             >
               <TeamBadge />
             </Link>
 
-            {/* HOME */}
+            {/* ==================================================
+                HOME
+                ================================================== */}
+
             <Link
               href="/"
+              aria-label="Naar Home"
               className="
                 inline-flex
+                shrink-0
                 items-center
                 gap-2
                 rounded-xl
@@ -81,22 +84,21 @@ export default function RootLayout({
             >
               <span
                 aria-hidden="true"
-                className="text-base leading-none"
+                className="text-lg leading-none"
               >
                 ⌂
               </span>
 
               <span>Home</span>
             </Link>
-
           </div>
         </header>
 
         {/* ==================================================
             PAGINA-INHOUD
             ================================================== */}
-        {children}
 
+        {children}
       </body>
     </html>
   );

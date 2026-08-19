@@ -29,7 +29,11 @@ export default function EditMatchForm({ activityId }: Props) {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [locking, setLocking] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<
+    "success" | "error" | "info"
+  >("info");
 
   useEffect(() => {
     async function loadMatch() {
@@ -63,6 +67,7 @@ export default function EditMatchForm({ activityId }: Props) {
             ? error.message
             : "Wedstrijd kon niet worden geladen."
         );
+        setMessageType("error");
       } finally {
         setLoading(false);
       }
@@ -74,14 +79,7 @@ export default function EditMatchForm({ activityId }: Props) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!match) {
-      return;
-    }
-
-    if (match.locked) {
-      setMessage(
-        "Deze wedstrijd is gesloten en kan niet meer worden gewijzigd."
-      );
+    if (!match || match.locked) {
       return;
     }
 
@@ -117,14 +115,84 @@ export default function EditMatchForm({ activityId }: Props) {
       setHome(data.home ?? true);
 
       setMessage("Wedstrijd opgeslagen.");
+      setMessageType("success");
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
           : "Wedstrijd kon niet worden opgeslagen."
       );
+      setMessageType("error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function changeLockState(locked: boolean) {
+    if (!match || locking) {
+      return;
+    }
+
+    if (locked) {
+      const confirmed = window.confirm(
+        "Weet je zeker dat je deze wedstrijd wilt sluiten?\n\nNa het sluiten kunnen aanwezigheid, goals en assists niet meer worden gewijzigd.\n\nDe wedstrijd kan later wel weer worden heropend."
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    try {
+      setLocking(true);
+      setMessage("");
+
+      const response = await fetch(`/api/match/${activityId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          locked,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            (locked
+              ? "Wedstrijd kon niet worden gesloten."
+              : "Wedstrijd kon niet worden heropend.")
+        );
+      }
+
+      setMatch(data);
+
+      setOpponent(data.opponent ?? "");
+      setStartTime(data.startTime);
+      setEndTime(data.endTime);
+      setHome(data.home ?? true);
+
+      if (locked) {
+        setMessage("Wedstrijd gesloten.");
+      } else {
+        setMessage("Wedstrijd heropend.");
+      }
+
+      setMessageType("success");
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : locked
+            ? "Wedstrijd kon niet worden gesloten."
+            : "Wedstrijd kon niet worden heropend."
+      );
+      setMessageType("error");
+    } finally {
+      setLocking(false);
     }
   }
 
@@ -154,6 +222,49 @@ export default function EditMatchForm({ activityId }: Props) {
       className="rounded-2xl bg-white p-6 shadow-sm"
     >
       <div className="grid gap-5">
+
+        {/* STATUS */}
+        <div
+          className={
+            match.locked
+              ? "rounded-xl border border-red-200 bg-red-50 px-4 py-4"
+              : "rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4"
+          }
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p
+                className={
+                  match.locked
+                    ? "text-sm font-bold text-red-700"
+                    : "text-sm font-bold text-emerald-700"
+                }
+              >
+                {match.locked
+                  ? "Wedstrijd gesloten"
+                  : "Wedstrijd open"}
+              </p>
+
+              <p
+                className={
+                  match.locked
+                    ? "mt-1 text-xs text-red-600"
+                    : "mt-1 text-xs text-emerald-600"
+                }
+              >
+                {match.locked
+                  ? "Aanwezigheid, goals en assists kunnen niet meer worden gewijzigd."
+                  : "De wedstrijd kan nog worden bewerkt en geregistreerd."}
+              </p>
+            </div>
+
+            <span className="shrink-0 text-2xl">
+              {match.locked ? "🔒" : "🔓"}
+            </span>
+          </div>
+        </div>
+
+        {/* TEGENSTANDER */}
         <div>
           <label
             htmlFor="opponent"
@@ -169,10 +280,11 @@ export default function EditMatchForm({ activityId }: Props) {
             onChange={(event) => setOpponent(event.target.value)}
             placeholder="Tegenstander"
             disabled={match.locked}
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#16803c] focus:ring-2 focus:ring-[#e9f7ee] disabled:cursor-not-allowed disabled:bg-slate-100"
           />
         </div>
 
+        {/* TIJDEN */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label
@@ -189,7 +301,7 @@ export default function EditMatchForm({ activityId }: Props) {
               value={startTime}
               onChange={(event) => setStartTime(event.target.value)}
               disabled={match.locked}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#16803c] focus:ring-2 focus:ring-[#e9f7ee] disabled:cursor-not-allowed disabled:bg-slate-100"
             />
           </div>
 
@@ -208,11 +320,12 @@ export default function EditMatchForm({ activityId }: Props) {
               value={endTime}
               onChange={(event) => setEndTime(event.target.value)}
               disabled={match.locked}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#16803c] focus:ring-2 focus:ring-[#e9f7ee] disabled:cursor-not-allowed disabled:bg-slate-100"
             />
           </div>
         </div>
 
+        {/* THUIS / UIT */}
         <div>
           <label
             htmlFor="home"
@@ -228,7 +341,7 @@ export default function EditMatchForm({ activityId }: Props) {
               setHome(event.target.value === "home")
             }
             disabled={match.locked}
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#16803c] focus:ring-2 focus:ring-[#e9f7ee] disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             <option value="home">
               Thuiswedstrijd
@@ -240,33 +353,115 @@ export default function EditMatchForm({ activityId }: Props) {
           </select>
         </div>
 
-        {match.locked && (
-          <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Deze wedstrijd is gesloten en kan niet meer worden gewijzigd.
-          </div>
-        )}
-
+        {/* MELDING */}
         {message && (
-          <p
+          <div
             className={
-              message === "Wedstrijd opgeslagen."
-                ? "text-sm text-emerald-600"
-                : "text-sm text-red-600"
+              messageType === "success"
+                ? "rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
+                : messageType === "error"
+                  ? "rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+                  : "rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600"
             }
           >
             {message}
-          </p>
+          </div>
         )}
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={saving || match.locked}
-            className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving ? "Opslaan..." : "Wedstrijd opslaan"}
-          </button>
+        {/* OPSLAAN */}
+        {!match.locked && (
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={saving || locking}
+              className="
+                rounded-xl
+                bg-[#16803c]
+                px-5
+                py-3
+                text-sm
+                font-bold
+                text-white
+                shadow-sm
+                transition
+                hover:bg-[#116631]
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
+            >
+              {saving
+                ? "Opslaan..."
+                : "Wedstrijd opslaan"}
+            </button>
+          </div>
+        )}
+
+        {/* LOCK / UNLOCK */}
+        <div className="border-t border-slate-200 pt-5">
+          {match.locked ? (
+            <button
+              type="button"
+              disabled={locking}
+              onClick={() => changeLockState(false)}
+              className="
+                w-full
+                rounded-xl
+                border
+                border-emerald-200
+                bg-emerald-50
+                px-5
+                py-3
+                text-sm
+                font-bold
+                text-emerald-700
+                transition
+                hover:border-emerald-300
+                hover:bg-emerald-100
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
+            >
+              {locking
+                ? "Wedstrijd heropenen..."
+                : "🔓 Wedstrijd heropenen"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={locking || saving}
+              onClick={() => changeLockState(true)}
+              className="
+                w-full
+                rounded-xl
+                border
+                border-red-200
+                bg-red-50
+                px-5
+                py-3
+                text-sm
+                font-bold
+                text-red-600
+                transition
+                hover:border-red-300
+                hover:bg-red-100
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
+            >
+              {locking
+                ? "Wedstrijd sluiten..."
+                : "🔒 Wedstrijd sluiten"}
+            </button>
+          )}
         </div>
+
+        {/* LOCK DATUM */}
+        {match.locked && match.lockedAt && (
+          <p className="text-center text-xs text-slate-400">
+            Gesloten op{" "}
+            {new Date(match.lockedAt).toLocaleString("nl-NL")}
+          </p>
+        )}
       </div>
     </form>
   );

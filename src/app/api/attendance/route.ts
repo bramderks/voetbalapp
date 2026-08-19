@@ -10,90 +10,105 @@ export async function POST(request: Request) {
 
     const activityId = Number(body.activityId);
     const playerId = Number(body.playerId);
-    const present = Boolean(body.present);
+    const present = body.present;
 
-    if (!Number.isInteger(activityId) || activityId <= 0) {
+    if (
+      !Number.isInteger(activityId) ||
+      activityId <= 0 ||
+      !Number.isInteger(playerId) ||
+      playerId <= 0
+    ) {
       return NextResponse.json(
-        { error: "Ongeldig activityId." },
-        { status: 400 }
+        {
+          error: "Ongeldige training of speler.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    if (!Number.isInteger(playerId) || playerId <= 0) {
+    if (typeof present !== "boolean") {
       return NextResponse.json(
-        { error: "Ongeldig playerId." },
-        { status: 400 }
-      );
-    }
-
-    const activity = await prisma.activity.findUnique({
-      where: {
-        id: activityId,
-      },
-    });
-
-    if (!activity) {
-      return NextResponse.json(
-        { error: "Activiteit niet gevonden." },
-        { status: 404 }
+        {
+          error: "Aanwezigheid moet aanwezig of afwezig zijn.",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
     /*
-     * Een gesloten training of wedstrijd mag nooit meer
-     * worden aangepast.
+     * Training controleren.
      */
-    if (activity.locked) {
+    const training = await prisma.activity.findFirst({
+      where: {
+        id: activityId,
+        type: "TRAINING",
+      },
+    });
+
+    if (!training) {
       return NextResponse.json(
         {
-          error:
-            "Deze activiteit is gesloten. Aanwezigheid kan niet meer worden gewijzigd.",
+          error: "Training niet gevonden.",
         },
-        { status: 409 }
+        {
+          status: 404,
+        }
       );
     }
 
-    const player = await prisma.player.findUnique({
+    /*
+     * Gesloten trainingen mogen niet meer worden gewijzigd.
+     */
+    if (training.locked) {
+      return NextResponse.json(
+        {
+          error:
+            "Deze training is gesloten. De aanwezigheid kan niet meer worden gewijzigd.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
+    /*
+     * Speler controleren.
+     *
+     * Een speler mag alleen aanwezigheid krijgen voor een
+     * training van zijn eigen team.
+     */
+    const player = await prisma.player.findFirst({
       where: {
         id: playerId,
+        teamId: training.teamId,
       },
     });
 
     if (!player) {
       return NextResponse.json(
-        { error: "Speler niet gevonden." },
-        { status: 404 }
-      );
-    }
-
-    /*
-     * Een speler kan alleen aanwezigheid registreren
-     * voor activiteiten van zijn eigen team.
-     */
-    if (player.teamId !== activity.teamId) {
-      return NextResponse.json(
         {
           error:
-            "Deze speler hoort niet bij het team van deze activiteit.",
+            "Deze speler hoort niet bij het team van deze training.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
     /*
-     * We gebruiken bewust findFirst in plaats van upsert.
-     *
-     * De database bevat mogelijk nog dubbele oude records.
-     * Zodra we die opgeschoond hebben, kunnen we een unieke
-     * constraint toevoegen.
+     * Omdat activityId + playerId momenteel geen samengestelde
+     * unique key in Prisma is, zoeken we het bestaande record
+     * op en werken we het daarna bij.
      */
     const existing = await prisma.attendance.findFirst({
       where: {
         activityId,
         playerId,
-      },
-      orderBy: {
-        id: "asc",
       },
     });
 
@@ -107,7 +122,6 @@ export async function POST(request: Request) {
         },
         include: {
           player: true,
-          activity: true,
         },
       });
 
@@ -122,19 +136,20 @@ export async function POST(request: Request) {
       },
       include: {
         player: true,
-        activity: true,
       },
     });
 
-    return NextResponse.json(created, { status: 201 });
+    return NextResponse.json(created);
   } catch (error) {
-    console.error("POST /api/attendance error:", error);
+    console.error("Fout bij opslaan aanwezigheid:", error);
 
     return NextResponse.json(
       {
         error: "Aanwezigheid kon niet worden opgeslagen.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

@@ -21,7 +21,6 @@ const TRAINING_END_TIME = "16:00";
 const MATCH_START_TIME = "14:00";
 const MATCH_END_TIME = "15:30";
 
-
 /**
  * Zet een Date om naar YYYY-MM-DD zonder timezone-verschuiving.
  */
@@ -33,7 +32,6 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-
 /**
  * Maakt een lokale datum aan.
  */
@@ -44,7 +42,6 @@ function createDate(
 ): Date {
   return new Date(year, month - 1, day);
 }
-
 
 /**
  * Genereert alle trainingen en wedstrijden voor het seizoen.
@@ -91,7 +88,6 @@ export async function generateActivities(): Promise<ActivityToCreate[]> {
    */
   const team = teams[0];
 
-  const start = createDate(2026, 8, 18);
   const end = createDate(2027, 5, 31);
 
   const items: ActivityToCreate[] = [];

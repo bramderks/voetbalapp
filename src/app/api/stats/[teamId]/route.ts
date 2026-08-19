@@ -1,45 +1,152 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-interface Params {
-  params: { teamId: string };
-}
+export async function GET(
+  _request: Request,
+  { params }: { params: { teamId: string } }
+) {
+  try {
+    const teamId = Number(params.teamId);
 
-export async function GET(_req: Request, { params }: Params) {
-  const teamId = Number(params.teamId);
+    if (!Number.isInteger(teamId) || teamId <= 0) {
+      return NextResponse.json(
+        {
+          error: "Ongeldig team-ID.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
-  const players = await prisma.player.findMany({
-    where: { teamId },
-    include: {
-      attendance: {
-        include: { activity: true },
+    const team = await prisma.team.findUnique({
+      where: {
+        id: teamId,
       },
-      matchStats: true,
-    },
-  });
+    });
 
-  const result = players.map((player) => {
-    const trainingAttendances = player.attendance.filter(
-      (a) => a.activity.type === "TRAINING" && a.present
-    ).length;
+    if (!team) {
+      return NextResponse.json(
+        {
+          error: "Team niet gevonden.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
 
-    const matchAttendances = player.attendance.filter(
-      (a) => a.activity.type === "MATCH" && a.present
-    ).length;
+    /*
+     * Alleen GESLOTEN trainingen tellen mee.
+     */
+    const lockedTrainings =
+      await prisma.activity.findMany({
+        where: {
+          teamId,
+          type: "TRAINING",
+          locked: true,
+        },
+        select: {
+          id: true,
+        },
+      });
 
-    const goals = player.matchStats.reduce((sum, m) => sum + m.goals, 0);
-    const assists = player.matchStats.reduce((sum, m) => sum + m.assists, 0);
+    const lockedTrainingIds = lockedTrainings.map(
+      (training) => training.id
+    );
 
-    return {
-      id: player.id,
-      name: player.name,
-      trainingAttendances,
-      matchAttendances,
-      goals,
-      assists,
-    };
-  });
+    /*
+     * Alle spelers van het team.
+     */
+    const players = await prisma.player.findMany({
+      where: {
+        teamId,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
 
-  return NextResponse.json(result);
+    /*
+     * Alleen attendance van gelockte trainingen.
+     */
+    const attendance =
+      lockedTrainingIds.length === 0
+        ? []
+        : await prisma.attendance.findMany({
+            where: {
+              activityId: {
+                in: lockedTrainingIds,
+              },
+            },
+            select: {
+              playerId: true,
+              activityId: true,
+              present: true,
+            },
+          });
+
+    const stats = players.map((player) => {
+      const playerAttendance = attendance.filter(
+        (record) =>
+          record.playerId === player.id
+      );
+
+      const trainingTotal =
+        lockedTrainingIds.length;
+
+      const trainingPresent =
+        playerAttendance.filter(
+          (record) => record.present
+        ).length;
+
+      const trainingPercentage =
+        trainingTotal === 0
+          ? 0
+          : Math.round(
+              (trainingPresent / trainingTotal) *
+                100
+            );
+
+      return {
+        playerId: player.id,
+        name: player.name,
+        trainingTotal,
+        trainingPresent,
+        trainingPercentage,
+      };
+    });
+
+    return NextResponse.json({
+      team: {
+        id: team.id,
+        name: team.name,
+      },
+      lockedTrainingTotal:
+        lockedTrainingIds.length,
+      players: stats,
+    });
+  } catch (error) {
+    console.error(
+      "Fout bij ophalen trainingsstatistieken:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Trainingsstatistieken konden niet worden opgehaald.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

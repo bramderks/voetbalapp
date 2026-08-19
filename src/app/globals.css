@@ -3,44 +3,90 @@
 @tailwind utilities;
 
 /* ============================================================
-   BASIS
-   ============================================================ */
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  background: #f5f7f5;
-  color: #17211b;
-}
-
-body {
-  min-height: 100vh;
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-/* ============================================================
-   KLEUREN
+   VOETBALAPP — GLOBALE BASIS
    ============================================================ */
 
 :root {
   --app-green: #16803c;
   --app-green-dark: #116631;
   --app-green-light: #e9f7ee;
+  --app-green-soft: #f3faf5;
 
   --app-background: #f5f7f5;
   --app-card: #ffffff;
 
   --app-text: #17211b;
   --app-text-muted: #647067;
+  --app-text-light: #8a948d;
 
   --app-border: #e1e7e2;
+  --app-border-light: #edf1ed;
 
   --app-danger: #dc2626;
   --app-danger-light: #fef2f2;
+
+  --app-warning: #d97706;
+  --app-warning-light: #fffbeb;
+
+  --app-success: #16803c;
+  --app-success-light: #e9f7ee;
+
+  --app-radius: 16px;
+  --app-radius-small: 12px;
+
+  --app-shadow: 0 4px 14px rgba(23, 33, 27, 0.06);
+  --app-shadow-hover: 0 8px 24px rgba(23, 33, 27, 0.1);
+}
+
+/* ============================================================
+   HTML / BODY
+   ============================================================ */
+
+html {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--app-background);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--app-background);
+  color: var(--app-text);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ============================================================
+   BASIS ELEMENTEN
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 /* ============================================================
@@ -49,7 +95,7 @@ body {
 
 ::selection {
   background: var(--app-green);
-  color: white;
+  color: #ffffff;
 }
 
 /* ============================================================
@@ -75,7 +121,7 @@ body {
 }
 
 /* ============================================================
-   ALGEMENE COMPONENT-STIJLEN
+   ALGEMENE PAGINA
    ============================================================ */
 
 @layer components {
@@ -92,21 +138,79 @@ body {
     padding: 24px;
   }
 
+  .app-content {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ==========================================================
+     KAARTEN
+     ========================================================== */
+
   .app-card {
     background: var(--app-card);
     border: 1px solid var(--app-border);
-    border-radius: 16px;
-    box-shadow: 0 4px 14px rgba(23, 33, 27, 0.06);
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow);
   }
+
+  .app-card-hover {
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .app-card-hover:hover {
+    transform: translateY(-2px);
+    border-color: #d5ddd7;
+    box-shadow: var(--app-shadow-hover);
+  }
+
+  /* ==========================================================
+     PAGINAKOP
+     ========================================================== */
+
+  .app-page-header {
+    margin-bottom: 24px;
+  }
+
+  .app-page-title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--app-text);
+  }
+
+  .app-page-subtitle {
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--app-text-muted);
+  }
+
+  /* ==========================================================
+     ALGEMENE BUTTONS
+     ========================================================== */
 
   .app-button {
     display: inline-flex;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    gap: 8px;
+
     padding: 0 18px;
-    border-radius: 10px;
+
+    border-radius: var(--app-radius-small);
+
+    font-size: 14px;
     font-weight: 700;
+
     transition:
       background-color 0.15s ease,
       border-color 0.15s ease,
@@ -121,16 +225,17 @@ body {
 
   .app-button-primary {
     background: var(--app-green);
-    color: white;
+    color: #ffffff;
     box-shadow: 0 3px 8px rgba(22, 128, 60, 0.2);
   }
 
   .app-button-primary:hover {
     background: var(--app-green-dark);
+    box-shadow: 0 5px 12px rgba(22, 128, 60, 0.24);
   }
 
   .app-button-secondary {
-    background: white;
+    background: #ffffff;
     color: var(--app-text);
     border: 1px solid var(--app-border);
   }
@@ -138,26 +243,157 @@ body {
   .app-button-secondary:hover {
     border-color: var(--app-green);
     color: var(--app-green);
+    background: var(--app-green-soft);
   }
 
   .app-button-danger {
     background: var(--app-danger);
-    color: white;
+    color: #ffffff;
   }
 
   .app-button-danger:hover {
     background: #b91c1c;
   }
 
+  /* ==========================================================
+     HOME BUTTON
+     ========================================================== */
+
+  .app-home-button {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 16px;
+
+    border-radius: 12px;
+
+    background: var(--app-green);
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    box-shadow: 0 3px 8px rgba(22, 128, 60, 0.18);
+
+    transition:
+      background-color 0.15s ease,
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .app-home-button:hover {
+    background: var(--app-green-dark);
+    box-shadow: 0 5px 12px rgba(22, 128, 60, 0.22);
+  }
+
+  .app-home-button:active {
+    transform: translateY(1px);
+  }
+
+  /* ==========================================================
+     HOOFDMENU / VIERKANTE MENU BUTTONS
+     ========================================================== */
+
+  .app-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .app-menu-button {
+    display: flex;
+    min-height: 170px;
+
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    padding: 22px;
+
+    background: #ffffff;
+    border: 1px solid var(--app-border);
+    border-radius: 18px;
+
+    color: var(--app-text);
+    text-align: left;
+
+    box-shadow: var(--app-shadow);
+
+    transition:
+      transform 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      background-color 0.18s ease;
+  }
+
+  .app-menu-button:hover {
+    transform: translateY(-3px);
+    border-color: #cbd6ce;
+    background: #ffffff;
+    box-shadow: var(--app-shadow-hover);
+  }
+
+  .app-menu-button:active {
+    transform: translateY(-1px);
+  }
+
+  .app-menu-icon {
+    display: flex;
+    width: 52px;
+    height: 52px;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background: var(--app-green-light);
+    color: var(--app-green);
+
+    font-size: 25px;
+    line-height: 1;
+  }
+
+  .app-menu-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .app-menu-title {
+    font-size: 17px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: var(--app-text);
+  }
+
+  .app-menu-description {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--app-text-muted);
+  }
+
+  /* ==========================================================
+     FORMULIEREN
+     ========================================================== */
+
   .app-input {
     width: 100%;
     min-height: 44px;
+
     padding: 0 13px;
-    background: white;
+
+    background: #ffffff;
     color: var(--app-text);
+
     border: 1px solid var(--app-border);
     border-radius: 10px;
+
     outline: none;
+
     transition:
       border-color 0.15s ease,
       box-shadow 0.15s ease;
@@ -167,6 +403,29 @@ body {
     border-color: var(--app-green);
     box-shadow: 0 0 0 3px rgba(22, 128, 60, 0.12);
   }
+
+  .app-input::placeholder {
+    color: var(--app-text-light);
+  }
+
+  /* ==========================================================
+     STATUS
+     ========================================================== */
+
+  .app-status-success {
+    background: var(--app-success-light);
+    color: var(--app-green-dark);
+  }
+
+  .app-status-warning {
+    background: var(--app-warning-light);
+    color: var(--app-warning);
+  }
+
+  .app-status-danger {
+    background: var(--app-danger-light);
+    color: var(--app-danger);
+  }
 }
 
 /* ============================================================
@@ -174,7 +433,32 @@ body {
    ============================================================ */
 
 @media (max-width: 640px) {
-  .app-container {
+  .app-container,
+  .app-content {
     padding: 16px;
+  }
+
+  .app-page-title {
+    font-size: 24px;
+  }
+
+  .app-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .app-menu-button {
+    min-height: 140px;
+    padding: 18px;
+  }
+}
+
+/* ============================================================
+   GROTERE SCHERMEN
+   ============================================================ */
+
+@media (min-width: 900px) {
+  .app-menu-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

@@ -39,41 +39,51 @@ export default async function TrainingenPage() {
   });
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <div className="mx-auto w-full max-w-2xl">
+    <main className="app-page">
+      <div className="app-container max-w-4xl">
 
         {/* HEADER */}
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between gap-4">
           <TeamBadge />
 
           <Link
             href="/"
             className="
-              rounded-lg
-              border border-white/30
-              px-4 py-2
+              inline-flex
+              items-center
+              gap-2
+              rounded-xl
+              bg-[#16803c]
+              px-4
+              py-2.5
               text-sm
-              font-semibold
+              font-bold
+              text-white
+              shadow-sm
               transition
-              hover:border-green-400
-              hover:text-green-400
+              hover:bg-[#116631]
+              active:translate-y-px
             "
           >
-            Home
+            <span aria-hidden="true" className="text-base leading-none">
+              ⌂
+            </span>
+
+            <span>Home</span>
           </Link>
         </header>
 
-        {/* TITEL */}
-        <section className="mt-8">
-          <p className="text-sm font-semibold uppercase tracking-widest text-green-400">
+        {/* PAGINA-TITEL */}
+        <section className="mt-10">
+          <p className="text-sm font-bold uppercase tracking-widest text-[#16803c]">
             Teamplanning
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-wide">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#17211b]">
             Trainingen
           </h1>
 
-          <p className="mt-2 text-neutral-400">
+          <p className="mt-2 text-sm leading-6 text-[#647067]">
             Bekijk de geplande trainingen en beheer de aanwezigheid.
           </p>
         </section>
@@ -81,62 +91,99 @@ export default async function TrainingenPage() {
         {/* TRAININGEN */}
         <section className="mt-8">
           {trainingen.length === 0 ? (
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-              <p className="text-neutral-400">
-                Er zijn nog geen trainingen gepland.
-              </p>
+            <div className="app-card p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#e9f7ee] text-2xl">
+                  ⚽
+                </div>
+
+                <div>
+                  <h2 className="font-bold text-[#17211b]">
+                    Geen trainingen
+                  </h2>
+
+                  <p className="mt-1 text-sm text-[#647067]">
+                    Er zijn nog geen trainingen gepland.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-4">
               {trainingen.map((training) => (
                 <Link
                   key={training.id}
                   href={`/trainingen/${training.id}`}
                   className="
+                    group
                     block
                     rounded-2xl
-                    border border-neutral-800
-                    bg-neutral-900
+                    border
+                    border-[#e1e7e2]
+                    bg-white
                     p-5
-                    shadow-lg
+                    shadow-[0_4px_14px_rgba(23,33,27,0.06)]
                     transition
-                    hover:border-green-400
-                    hover:bg-neutral-800
+                    hover:-translate-y-0.5
+                    hover:border-[#16803c]
+                    hover:shadow-md
                   "
                 >
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
 
-                    {/* DATUM + TIJD */}
-                    <div className="min-w-0">
-                      <p className="text-lg font-bold capitalize">
+                    {/* ICOON */}
+                    <div
+                      className="
+                        flex
+                        h-14
+                        w-14
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-[#e9f7ee]
+                        text-2xl
+                        transition
+                        group-hover:bg-[#16803c]
+                        group-hover:grayscale
+                      "
+                    >
+                      ⚽
+                    </div>
+
+                    {/* INFORMATIE */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-lg font-bold capitalize text-[#17211b]">
                         {formatDate(training.date)}
                       </p>
 
-                      <p className="mt-1 text-neutral-300">
+                      <p className="mt-1 text-sm font-medium text-[#647067]">
                         {training.startTime} – {training.endTime}
                       </p>
 
                       {training.team?.name && (
-                        <p className="mt-1 text-sm text-neutral-500">
+                        <p className="mt-1 text-xs font-medium text-[#647067]">
                           {training.team.name}
                         </p>
                       )}
                     </div>
 
-                    {/* STATUS */}
-                    <div className="shrink-0">
+                    {/* STATUS + PIJL */}
+                    <div className="flex shrink-0 items-center gap-3">
                       {training.locked ? (
                         <span
                           className="
-                            inline-flex
+                            hidden
                             rounded-full
-                            bg-red-500/10
-                            px-3 py-1.5
+                            bg-[#fef2f2]
+                            px-3
+                            py-1.5
                             text-xs
                             font-bold
                             uppercase
                             tracking-wide
-                            text-red-400
+                            text-[#dc2626]
+                            sm:inline-flex
                           "
                         >
                           Gesloten
@@ -144,20 +191,36 @@ export default async function TrainingenPage() {
                       ) : (
                         <span
                           className="
-                            inline-flex
+                            hidden
                             rounded-full
-                            bg-green-500/10
-                            px-3 py-1.5
+                            bg-[#e9f7ee]
+                            px-3
+                            py-1.5
                             text-xs
                             font-bold
                             uppercase
                             tracking-wide
-                            text-green-400
+                            text-[#16803c]
+                            sm:inline-flex
                           "
                         >
                           Open
                         </span>
                       )}
+
+                      <span
+                        aria-hidden="true"
+                        className="
+                          text-xl
+                          font-bold
+                          text-[#aab6ad]
+                          transition
+                          group-hover:translate-x-1
+                          group-hover:text-[#16803c]
+                        "
+                      >
+                        →
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -166,27 +229,33 @@ export default async function TrainingenPage() {
           )}
         </section>
 
-        {/* ONDERSTE NAVIGATIE */}
+        {/* TERUG */}
         <div className="mt-8">
           <Link
             href="/"
             className="
-              block
+              inline-flex
+              w-full
+              items-center
+              justify-center
               rounded-xl
-              border border-white/20
-              bg-neutral-900
-              px-4 py-3
-              text-center
-              font-semibold
+              border
+              border-[#e1e7e2]
+              bg-white
+              px-4
+              py-3
+              text-sm
+              font-bold
+              text-[#17211b]
+              shadow-sm
               transition
-              hover:border-green-400
-              hover:text-green-400
+              hover:border-[#16803c]
+              hover:text-[#16803c]
             "
           >
-            Terug naar Home
+            ← Terug naar Home
           </Link>
         </div>
-
       </div>
     </main>
   );

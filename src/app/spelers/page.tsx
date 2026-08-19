@@ -1,3 +1,4 @@
+import Link from "next/link";
 import TeamBadge from "@/components/TeamBadge";
 
 export default function SpelersPage() {
@@ -13,38 +14,118 @@ export default function SpelersPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
+    <main className="app-page">
+      <div className="app-container">
 
-      {/* TITEL */}
-      <h1 className="text-3xl font-bold tracking-wide mb-8">Spelers</h1>
-
-      {/* LIJST */}
-      <div className="space-y-4">
-        {players.map((name) => (
-          <div
-            key={name}
-            className="
-              bg-neutral-900 
-              p-5 
-              rounded-xl 
-              border border-white 
-              flex items-center 
-              gap-5
-              hover:bg-neutral-800 
-              hover:border-green-400
-              transition 
-              shadow-lg
-            "
+        {/* ==================================================
+            HEADER
+            ================================================== */}
+        <header className="flex items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="transition hover:opacity-80"
+            aria-label="Naar Home"
           >
             <TeamBadge />
+          </Link>
 
-            <span className="text-xl font-bold tracking-wide">
-              {name}
+          <Link
+            href="/"
+            className="app-button app-button-primary"
+          >
+            <span aria-hidden="true" className="mr-2 text-base">
+              ⌂
             </span>
-          </div>
-        ))}
-      </div>
+            Home
+          </Link>
+        </header>
 
+        {/* ==================================================
+            TITEL
+            ================================================== */}
+        <section className="mt-8">
+          <p className="text-sm font-semibold uppercase tracking-widest text-[var(--app-green)]">
+            Teamoverzicht
+          </p>
+
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--app-text)]">
+            Spelers
+          </h1>
+
+          <p className="mt-2 text-sm text-[var(--app-text-muted)]">
+            Bekijk de spelers van het team.
+          </p>
+        </section>
+
+        {/* ==================================================
+            SPELERS
+            ================================================== */}
+        <section className="mt-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {players.map((name, index) => (
+              <div
+                key={name}
+                className="
+                  app-card
+                  flex
+                  items-center
+                  gap-4
+                  p-5
+                  transition
+                  hover:-translate-y-0.5
+                  hover:shadow-md
+                "
+              >
+                {/* NUMMER */}
+                <div
+                  className="
+                    flex
+                    h-12
+                    w-12
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-[var(--app-green-light)]
+                    text-lg
+                    font-bold
+                    text-[var(--app-green)]
+                  "
+                >
+                  {index + 1}
+                </div>
+
+                {/* NAAM */}
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-[var(--app-text)]">
+                    {name}
+                  </p>
+
+                  <p className="mt-0.5 text-sm text-[var(--app-text-muted)]">
+                    Speler
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ==================================================
+            ONDERSTE NAVIGATIE
+            ================================================== */}
+        <div className="mt-8">
+          <Link
+            href="/"
+            className="app-button app-button-secondary w-full"
+          >
+            <span aria-hidden="true" className="mr-2">
+              ⌂
+            </span>
+            Terug naar Home
+          </Link>
+        </div>
+
+      </div>
     </main>
   );
 }

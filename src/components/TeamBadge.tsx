@@ -2,20 +2,26 @@ import Image from "next/image";
 
 export default function TeamBadge() {
   return (
-    <div className="flex items-center space-x-4">
-      <div className="bg-neutral-900 p-2 rounded-xl border border-white shadow-lg">
+    <div className="flex items-center gap-3">
+      <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-[#e1e7e2] bg-white shadow-sm">
         <Image
-          src="/team-logo.png"
-          alt="Team badge"
-          width={60}
-          height={60}
-          className="rounded-lg"
+          src="/logo/team.png"
+          alt="SCE JO8-1"
+          width={56}
+          height={56}
+          className="h-full w-full object-contain"
+          priority
         />
       </div>
 
       <div className="flex flex-col">
-        <span className="text-2xl font-bold tracking-wide">SCE JO8‑1</span>
-        <span className="text-neutral-400 text-sm">Seizoen 2026‑2027</span>
+        <span className="text-lg font-bold tracking-tight text-[#17211b]">
+          SCE JO8-1
+        </span>
+
+        <span className="text-xs font-medium text-[#647067]">
+          Seizoen 2026-2027
+        </span>
       </div>
     </div>
   );

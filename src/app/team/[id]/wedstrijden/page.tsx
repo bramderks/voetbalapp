@@ -21,6 +21,11 @@ interface Player {
   assists: number;
 }
 
+interface TeamPlayer {
+  id: number;
+  name: string;
+}
+
 interface Props {
   params: { id: string };
 }
@@ -30,7 +35,8 @@ export default function WedstrijdenPage({ params }: Props) {
 
   const [matches, setMatches] = useState<Match[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [selectedMatch, setSelectedMatch] =
+    useState<Match | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -40,15 +46,19 @@ export default function WedstrijdenPage({ params }: Props) {
       setMatches(matchesData);
 
       // Spelers laden
-      const pRes = await fetch("/api/teamPlayers?teamId=" + teamId);
+      const pRes = await fetch(
+        "/api/teamPlayers?teamId=" + teamId
+      );
       const playersData = await pRes.json();
 
-      const enriched = playersData.map((p: any) => ({
-        ...p,
-        present: null,
-        goals: 0,
-        assists: 0,
-      }));
+      const enriched = playersData.map(
+        (p: TeamPlayer) => ({
+          ...p,
+          present: null,
+          goals: 0,
+          assists: 0,
+        })
+      );
 
       setPlayers(enriched);
     };
@@ -63,12 +73,18 @@ export default function WedstrijdenPage({ params }: Props) {
   ) => {
     await fetch("/api/attendance", {
       method: "POST",
-      body: JSON.stringify({ activityId: matchId, playerId, present }),
+      body: JSON.stringify({
+        activityId: matchId,
+        playerId,
+        present,
+      }),
     });
 
     setPlayers((prev) =>
       prev.map((p) =>
-        p.id === playerId ? { ...p, present } : p
+        p.id === playerId
+          ? { ...p, present }
+          : p
       )
     );
   };
@@ -81,7 +97,12 @@ export default function WedstrijdenPage({ params }: Props) {
   ) => {
     await fetch("/api/matchstats", {
       method: "POST",
-      body: JSON.stringify({ activityId: matchId, playerId, goals, assists }),
+      body: JSON.stringify({
+        activityId: matchId,
+        playerId,
+        goals,
+        assists,
+      }),
     });
 
     setPlayers((prev) =>
@@ -98,18 +119,22 @@ export default function WedstrijdenPage({ params }: Props) {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
+    <main className="min-h-screen bg-black p-6 text-white">
 
       {/* HEADER */}
       <div className="mb-6">
         <TeamBadge />
       </div>
 
-      <h1 className="text-3xl font-bold tracking-wide mb-8">Wedstrijden</h1>
+      <h1 className="mb-8 text-3xl font-bold tracking-wide">
+        Wedstrijden
+      </h1>
 
       {/* OVERZICHT */}
-      <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg mb-10">
-        <h2 className="text-xl font-bold mb-4">Overzicht</h2>
+      <section className="mb-10 rounded-xl border border-white bg-neutral-900 p-5 shadow-lg">
+        <h2 className="mb-4 text-xl font-bold">
+          Overzicht
+        </h2>
 
         <ul className="space-y-3">
           {matches.map((m) => (
@@ -117,19 +142,22 @@ export default function WedstrijdenPage({ params }: Props) {
               <button
                 onClick={() => setSelectedMatch(m)}
                 className="
-                  w-full 
-                  text-left 
-                  bg-black 
-                  border border-white 
-                  rounded-xl 
-                  p-3 
-                  hover:border-green-400 
-                  hover:bg-neutral-800 
+                  w-full
+                  rounded-xl
+                  border
+                  border-white
+                  bg-black
+                  p-3
+                  text-left
                   transition
+                  hover:border-green-400
+                  hover:bg-neutral-800
                 "
               >
-                <p className="font-bold text-lg">
-                  {new Date(m.date).toLocaleDateString("nl-NL", {
+                <p className="text-lg font-bold">
+                  {new Date(
+                    m.date
+                  ).toLocaleDateString("nl-NL", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
@@ -138,8 +166,9 @@ export default function WedstrijdenPage({ params }: Props) {
                 </p>
 
                 <p className="text-neutral-300">
-                  {m.opponent ?? "Onbekende tegenstander"} —{" "}
-                  {m.startTime}–{m.endTime}
+                  {m.opponent ??
+                    "Onbekende tegenstander"}{" "}
+                  — {m.startTime}–{m.endTime}
                 </p>
               </button>
             </li>
@@ -149,10 +178,12 @@ export default function WedstrijdenPage({ params }: Props) {
 
       {/* DETAIL */}
       {selectedMatch && (
-        <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg">
-          <h2 className="text-xl font-bold mb-4">
+        <section className="rounded-xl border border-white bg-neutral-900 p-5 shadow-lg">
+          <h2 className="mb-4 text-xl font-bold">
             Wedstrijd{" "}
-            {new Date(selectedMatch.date).toLocaleDateString("nl-NL", {
+            {new Date(
+              selectedMatch.date
+            ).toLocaleDateString("nl-NL", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -160,7 +191,7 @@ export default function WedstrijdenPage({ params }: Props) {
             })}
           </h2>
 
-          <p className="text-neutral-300 mb-6">
+          <p className="mb-6 text-neutral-300">
             Tegenstander:{" "}
             <span className="font-bold text-white">
               {selectedMatch.opponent ?? "Onbekend"}
@@ -176,10 +207,18 @@ export default function WedstrijdenPage({ params }: Props) {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-neutral-700">
-                  <th className="py-3 font-bold">Speler</th>
-                  <th className="py-3 font-bold">Goals</th>
-                  <th className="py-3 font-bold">Assists</th>
-                  <th className="py-3 font-bold">Aanwezig</th>
+                  <th className="py-3 font-bold">
+                    Speler
+                  </th>
+                  <th className="py-3 font-bold">
+                    Goals
+                  </th>
+                  <th className="py-3 font-bold">
+                    Assists
+                  </th>
+                  <th className="py-3 font-bold">
+                    Aanwezig
+                  </th>
                 </tr>
               </thead>
 
@@ -187,32 +226,63 @@ export default function WedstrijdenPage({ params }: Props) {
                 {players.map((p) => (
                   <tr
                     key={p.id}
-                    className="border-b border-neutral-800 hover:bg-neutral-800 transition"
+                    className="
+                      border-b
+                      border-neutral-800
+                      transition
+                      hover:bg-neutral-800
+                    "
                   >
                     {/* Naam */}
-                    <td className="py-3 font-bold">{p.name}</td>
+                    <td className="py-3 font-bold">
+                      {p.name}
+                    </td>
 
                     {/* Goals */}
                     <td className="py-3">
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() =>
-                            updateStats(selectedMatch.id, p.id, -1, 0)
+                            updateStats(
+                              selectedMatch.id,
+                              p.id,
+                              -1,
+                              0
+                            )
                           }
-                          className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded-xl font-bold"
+                          className="
+                            rounded-xl
+                            bg-red-600
+                            px-3
+                            py-1
+                            font-bold
+                            hover:bg-red-500
+                          "
                         >
                           –
                         </button>
 
-                        <span className="text-green-400 font-bold">
+                        <span className="font-bold text-green-400">
                           {p.goals}
                         </span>
 
                         <button
                           onClick={() =>
-                            updateStats(selectedMatch.id, p.id, 1, 0)
+                            updateStats(
+                              selectedMatch.id,
+                              p.id,
+                              1,
+                              0
+                            )
                           }
-                          className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded-xl font-bold"
+                          className="
+                            rounded-xl
+                            bg-green-600
+                            px-3
+                            py-1
+                            font-bold
+                            hover:bg-green-500
+                          "
                         >
                           +
                         </button>
@@ -224,22 +294,46 @@ export default function WedstrijdenPage({ params }: Props) {
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() =>
-                            updateStats(selectedMatch.id, p.id, 0, -1)
+                            updateStats(
+                              selectedMatch.id,
+                              p.id,
+                              0,
+                              -1
+                            )
                           }
-                          className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded-xl font-bold"
+                          className="
+                            rounded-xl
+                            bg-red-600
+                            px-3
+                            py-1
+                            font-bold
+                            hover:bg-red-500
+                          "
                         >
                           –
                         </button>
 
-                        <span className="text-blue-400 font-bold">
+                        <span className="font-bold text-blue-400">
                           {p.assists}
                         </span>
 
                         <button
                           onClick={() =>
-                            updateStats(selectedMatch.id, p.id, 0, 1)
+                            updateStats(
+                              selectedMatch.id,
+                              p.id,
+                              0,
+                              1
+                            )
                           }
-                          className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded-xl font-bold"
+                          className="
+                            rounded-xl
+                            bg-blue-600
+                            px-3
+                            py-1
+                            font-bold
+                            hover:bg-blue-500
+                          "
                         >
                           +
                         </button>
@@ -251,7 +345,11 @@ export default function WedstrijdenPage({ params }: Props) {
                       <Toggle
                         value={p.present}
                         onChange={(val) =>
-                          toggleAttendance(selectedMatch.id, p.id, val)
+                          toggleAttendance(
+                            selectedMatch.id,
+                            p.id,
+                            val
+                          )
                         }
                       />
                     </td>

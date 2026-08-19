@@ -26,7 +26,8 @@ export default function TrainingenPage({ params }: Props) {
 
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [selectedTraining, setSelectedTraining] = useState<Training | null>(null);
+  const [selectedTraining, setSelectedTraining] =
+    useState<Training | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -36,13 +37,17 @@ export default function TrainingenPage({ params }: Props) {
       setTrainings(trainingsData);
 
       // SPELERS LADEN
-      const pRes = await fetch("/api/teamPlayers?teamId=" + teamId);
+      const pRes = await fetch(
+        "/api/teamPlayers?teamId=" + teamId
+      );
       const playersData = await pRes.json();
 
-      const enriched = playersData.map((p: any) => ({
-        ...p,
-        present: null,
-      }));
+      const enriched = playersData.map(
+        (p: { id: number; name: string }) => ({
+          ...p,
+          present: null,
+        })
+      );
 
       setPlayers(enriched);
     };
@@ -60,7 +65,11 @@ export default function TrainingenPage({ params }: Props) {
   ) => {
     await fetch("/api/attendance", {
       method: "POST",
-      body: JSON.stringify({ activityId: trainingId, playerId, present }),
+      body: JSON.stringify({
+        activityId: trainingId,
+        playerId,
+        present,
+      }),
     });
 
     setPlayers((prev) =>
@@ -71,18 +80,22 @@ export default function TrainingenPage({ params }: Props) {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
+    <main className="min-h-screen bg-black p-6 text-white">
 
       {/* HEADER */}
       <div className="mb-6">
         <TeamBadge />
       </div>
 
-      <h1 className="text-3xl font-bold tracking-wide mb-8">Trainingen</h1>
+      <h1 className="mb-8 text-3xl font-bold tracking-wide">
+        Trainingen
+      </h1>
 
       {/* OVERZICHT */}
-      <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg mb-10">
-        <h2 className="text-xl font-bold mb-4">Overzicht</h2>
+      <section className="mb-10 rounded-xl border border-white bg-neutral-900 p-5 shadow-lg">
+        <h2 className="mb-4 text-xl font-bold">
+          Overzicht
+        </h2>
 
         <ul className="space-y-3">
           {trainings.map((t) => (
@@ -90,24 +103,28 @@ export default function TrainingenPage({ params }: Props) {
               <button
                 onClick={() => setSelectedTraining(t)}
                 className="
-                  w-full 
-                  text-left 
-                  bg-black 
-                  border border-white 
-                  rounded-xl 
-                  p-3 
-                  hover:border-green-400 
-                  hover:bg-neutral-800 
+                  w-full
+                  rounded-xl
+                  border
+                  border-white
+                  bg-black
+                  p-3
+                  text-left
                   transition
+                  hover:border-green-400
+                  hover:bg-neutral-800
                 "
               >
-                <p className="font-bold text-lg">
-                  {new Date(t.date).toLocaleDateString("nl-NL", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                <p className="text-lg font-bold">
+                  {new Date(t.date).toLocaleDateString(
+                    "nl-NL",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )}
                 </p>
 
                 <p className="text-neutral-300">
@@ -121,10 +138,12 @@ export default function TrainingenPage({ params }: Props) {
 
       {/* DETAILPAGINA */}
       {selectedTraining && (
-        <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg">
-          <h2 className="text-xl font-bold mb-4">
+        <section className="rounded-xl border border-white bg-neutral-900 p-5 shadow-lg">
+          <h2 className="mb-4 text-xl font-bold">
             Training{" "}
-            {new Date(selectedTraining.date).toLocaleDateString("nl-NL", {
+            {new Date(
+              selectedTraining.date
+            ).toLocaleDateString("nl-NL", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -133,8 +152,9 @@ export default function TrainingenPage({ params }: Props) {
           </h2>
 
           {isPast(selectedTraining) && (
-            <p className="text-red-400 mb-4">
-              Training is voorbij — aanwezigheid kan niet meer gewijzigd worden.
+            <p className="mb-4 text-red-400">
+              Training is voorbij — aanwezigheid kan
+              niet meer gewijzigd worden.
             </p>
           )}
 
@@ -143,22 +163,29 @@ export default function TrainingenPage({ params }: Props) {
               <li
                 key={p.id}
                 className="
-                  flex 
-                  items-center 
-                  justify-between 
-                  bg-black 
-                  border border-white 
-                  rounded-xl 
+                  flex
+                  items-center
+                  justify-between
+                  rounded-xl
+                  border
+                  border-white
+                  bg-black
                   p-3
                 "
               >
-                <span className="text-lg font-bold">{p.name}</span>
+                <span className="text-lg font-bold">
+                  {p.name}
+                </span>
 
                 {!isPast(selectedTraining) ? (
                   <Toggle
                     value={p.present}
                     onChange={(val) =>
-                      toggleAttendance(selectedTraining.id, p.id, val)
+                      toggleAttendance(
+                        selectedTraining.id,
+                        p.id,
+                        val
+                      )
                     }
                   />
                 ) : (
@@ -166,8 +193,8 @@ export default function TrainingenPage({ params }: Props) {
                     {p.present === true
                       ? "Aanwezig"
                       : p.present === false
-                      ? "Afwezig"
-                      : "Geen status"}
+                        ? "Afwezig"
+                        : "Geen status"}
                   </span>
                 )}
               </li>
