@@ -354,34 +354,35 @@ export default async function WedstrijdDetailPage({
 />
 
         {/* ACTIES */}
-        {!wedstrijd.locked && (
-          <section className="app-card mt-6 p-6">
+        <section className="app-card mt-6 p-6">
             <h2 className="text-lg font-bold text-[#17211b]">
               Wedstrijd beheren
             </h2>
 
             <p className="mt-1 text-sm text-[#647067]">
-              Registreer aanwezigheid en wedstrijdstatistieken zolang
-              de wedstrijd open staat.
+              {wedstrijd.locked
+                ? "Open de wedstrijd opnieuw om gegevens en registratie weer te kunnen aanpassen."
+                : "Registreer aanwezigheid, goals en assists of bewerk de wedstrijdgegevens."}
             </p>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Link
-                href={`/wedstrijden/registreren?id=${wedstrijd.id}`}
-                className="app-button app-button-primary w-full"
-              >
-                Aanwezigheid registreren
-              </Link>
+            {!wedstrijd.locked && (
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <Link
+                  href={`/wedstrijden/registreren?id=${wedstrijd.id}`}
+                  className="app-button app-button-primary w-full"
+                >
+                  Wedstrijd registreren
+                </Link>
 
-              <Link
-                href={`/wedstrijden/bewerken?id=${wedstrijd.id}`}
-                className="app-button app-button-secondary w-full"
-              >
-                Wedstrijd bewerken
-              </Link>
-            </div>
+                <Link
+                  href={`/wedstrijden/bewerken?id=${wedstrijd.id}`}
+                  className="app-button app-button-secondary w-full"
+                >
+                  Wedstrijd bewerken
+                </Link>
+              </div>
+            )}
           </section>
-        )}
 
         {/* TERUG */}
         <div className="mt-8">
