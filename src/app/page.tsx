@@ -94,6 +94,7 @@ export default async function HomePage() {
     where: {
       type: "TRAINING",
       teamId: team?.id,
+      locked: false,
       date: {
         gte: vandaagString,
       },
@@ -161,7 +162,7 @@ export default async function HomePage() {
             </h2>
 
             <p className="mt-1 text-sm text-[#647067]">
-              De eerstvolgende training en wedstrijd.
+              De eerstvolgende open training en open wedstrijd.
             </p>
           </div>
 
@@ -208,7 +209,7 @@ export default async function HomePage() {
 
                 <div>
                   <p className="text-sm font-semibold text-[#16803c]">
-                    Volgende training
+                    Volgende open training
                   </p>
                 </div>
               </div>
@@ -226,7 +227,7 @@ export default async function HomePage() {
                 </>
               ) : (
                 <p className="text-sm text-[#647067]">
-                  Geen training gepland.
+                  Geen open training gepland.
                 </p>
               )}
             </Link>
@@ -272,7 +273,7 @@ export default async function HomePage() {
 
                 <div>
                   <p className="text-sm font-semibold text-[#16803c]">
-                    Volgende wedstrijd
+                    Volgende open wedstrijd
                   </p>
                 </div>
               </div>
@@ -305,7 +306,7 @@ export default async function HomePage() {
                 </>
               ) : (
                 <p className="text-sm text-[#647067]">
-                  Geen wedstrijd gepland.
+                  Geen open wedstrijd gepland.
                 </p>
               )}
             </Link>
