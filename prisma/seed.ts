@@ -124,6 +124,30 @@ async function main() {
    * PLAYERS
    * ============================================================
    *
+   * Bestaande spelernaam migreren zonder statistieken,
+   * aanwezigheid of relaties te verliezen.
+   */
+  const existingJamie = await prisma.player.findFirst({
+    where: {
+      name: "Jamie",
+      teamId: team.id,
+    },
+  });
+
+  if (existingJamie) {
+    await prisma.player.update({
+      where: {
+        id: existingJamie.id,
+      },
+      data: {
+        name: "Lorenz",
+      },
+    });
+
+    console.log("✅ Speler Jamie hernoemd naar Lorenz");
+  }
+
+  /**
    * Alleen spelers aanmaken die nog niet bestaan binnen dit team.
    */
   for (const name of playerNames) {
