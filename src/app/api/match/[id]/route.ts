@@ -226,6 +226,17 @@ export async function PATCH(
       );
     }
 
+    if (endTime <= startTime) {
+      return NextResponse.json(
+        {
+          error: "De eindtijd moet na de begintijd liggen.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     /*
      * LET OP:
      *
