@@ -96,8 +96,18 @@ export default async function WedstrijdenPage() {
           </p>
         </section>
 
-        {/* WEDSTRIJDEN */}
+        {/* ACTIES */}
         <section className="mt-8">
+          <Link
+            href="/wedstrijden/nieuw"
+            className="app-button app-button-primary w-full sm:w-auto"
+          >
+            + Nieuwe wedstrijd
+          </Link>
+        </section>
+
+        {/* WEDSTRIJDEN */}
+        <section className="mt-6">
           {wedstrijden.length === 0 ? (
             <div className="app-card p-6">
               <div className="flex items-center gap-4">
