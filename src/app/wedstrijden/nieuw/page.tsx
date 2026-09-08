@@ -22,6 +22,11 @@ export default function NieuweWedstrijdPage() {
       return;
     }
 
+    if (endTime <= startTime) {
+      setError("De eindtijd moet na de begintijd liggen.");
+      return;
+    }
+
     setSaving(true);
 
     try {
