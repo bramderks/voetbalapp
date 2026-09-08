@@ -9,7 +9,7 @@ export default function SpelersPage() {
     "Mahmoud",
     "Eymen",
     "Romy",
-    "Jamie",
+    "Lorenz",
     "Moussa",
   ];
 
