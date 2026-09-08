@@ -13,7 +13,7 @@ const MATCH_END_TIME = "11:30";
 
 const playerNames = [
   "Eymen",
-  "Jamie",
+  "Lorenz",
   "Joa",
   "Mahmoud",
   "Moussa",
