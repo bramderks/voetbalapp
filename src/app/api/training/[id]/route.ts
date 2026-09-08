@@ -4,20 +4,26 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+function getActivityId(params: { id: string }) {
+  const activityId = Number(params.id);
+
+  if (!Number.isInteger(activityId) || activityId <= 0) {
+    return null;
+  }
+
+  return activityId;
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
-  const activityId = Number(params.id);
+  const activityId = getActivityId(params);
 
-  if (!Number.isInteger(activityId) || activityId <= 0) {
+  if (!activityId) {
     return NextResponse.json(
-      {
-        error: "Ongeldig training-ID.",
-      },
-      {
-        status: 400,
-      }
+      { error: "Ongeldig training-ID." },
+      { status: 400 }
     );
   }
 
@@ -38,22 +44,11 @@ export async function GET(
 
   if (!training) {
     return NextResponse.json(
-      {
-        error: "Training niet gevonden.",
-      },
-      {
-        status: 404,
-      }
+      { error: "Training niet gevonden." },
+      { status: 404 }
     );
   }
 
-  /*
-   * Alle spelers van het team ophalen.
-   *
-   * Attendance-records bestaan mogelijk nog niet voor iedere
-   * speler. Daarom geven we spelers en attendance afzonderlijk
-   * terug.
-   */
   const players = await prisma.player.findMany({
     where: {
       teamId: training.teamId,
@@ -84,4 +79,75 @@ export async function GET(
     players,
     attendance: training.attendance,
   });
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const activityId = getActivityId(params);
+
+    if (!activityId) {
+      return NextResponse.json(
+        { error: "Ongeldig training-ID." },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json().catch(() => null);
+    const locked = body?.locked;
+
+    if (typeof locked !== "boolean") {
+      return NextResponse.json(
+        { error: "Geef een geldige lockstatus op." },
+        { status: 400 }
+      );
+    }
+
+    const training = await prisma.activity.findFirst({
+      where: {
+        id: activityId,
+        type: "TRAINING",
+      },
+      select: {
+        id: true,
+        locked: true,
+      },
+    });
+
+    if (!training) {
+      return NextResponse.json(
+        { error: "Training niet gevonden." },
+        { status: 404 }
+      );
+    }
+
+    const updatedTraining = await prisma.activity.update({
+      where: {
+        id: training.id,
+      },
+      data: {
+        locked,
+        lockedAt: locked ? new Date() : null,
+      },
+      select: {
+        id: true,
+        locked: true,
+        lockedAt: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      ...updatedTraining,
+    });
+  } catch (error) {
+    console.error("Fout bij wijzigen trainingstatus:", error);
+
+    return NextResponse.json(
+      { error: "Trainingstatus kon niet worden gewijzigd." },
+      { status: 500 }
+    );
+  }
 }
