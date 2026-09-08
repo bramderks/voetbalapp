@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import TeamBadge from "@/components/TeamBadge";
+import TrainingLockControl from "@/components/TrainingLockControl";
 
 type Player = {
   id: number;
@@ -617,63 +618,12 @@ export default function TrainingDetail({
             </div>
           </section>
 
-          {/* TRAINING SLUITEN */}
-          {!training.locked && (
-            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div>
-                <h2 className="text-lg font-bold">
-                  Training afronden
-                </h2>
-
-                <p className="mt-1 text-sm text-[var(--app-text-muted)]">
-                  Na het sluiten staat de aanwezigheid definitief
-                  vast en telt deze training mee voor de
-                  statistieken.
-                </p>
-              </div>
-
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  {openCount > 0 ? (
-                    <p className="text-sm font-medium text-amber-700">
-                      Vul eerst alle {openCount} openstaande
-                      spelers in.
-                    </p>
-                  ) : (
-                    <p className="text-sm font-medium text-emerald-700">
-                      Alle spelers zijn ingevuld.
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  disabled={
-                    locking || openCount > 0
-                  }
-                  onClick={lockTraining}
-                  className="
-                    min-h-[46px]
-                    rounded-xl
-                    bg-[var(--app-green)]
-                    px-5
-                    text-sm
-                    font-bold
-                    text-white
-                    shadow-sm
-                    transition
-                    hover:bg-[var(--app-green-dark)]
-                    disabled:cursor-not-allowed
-                    disabled:opacity-50
-                  "
-                >
-                  {locking
-                    ? "Training sluiten..."
-                    : "Training sluiten"}
-                </button>
-              </div>
-            </section>
-          )}
+          {/* TRAINING AFRONDEN / HEROPENEN */}
+          <TrainingLockControl
+            activityId={training.id}
+            locked={training.locked}
+            openCount={openCount}
+          />
 
           {/* NAVIGATIE */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
