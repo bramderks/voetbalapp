@@ -153,6 +153,19 @@ export default async function WedstrijdRegistrerenPage({
     );
   }
 
+  const teamPlayers = await prisma.player.findMany({
+    where: {
+      teamId: wedstrijd.teamId,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  const attendanceByPlayerId = new Map(
+    wedstrijd.attendance.map((item) => [item.playerId, item])
+  );
+
   return (
     <main className="app-page">
       <div className="app-container max-w-5xl">
@@ -312,12 +325,16 @@ export default async function WedstrijdRegistrerenPage({
           <MatchRegistration
             activityId={wedstrijd.id}
             locked={wedstrijd.locked}
-            attendance={wedstrijd.attendance.map((item) => ({
-              id: item.id,
-              playerId: item.playerId,
-              playerName: item.player.name,
-              present: item.present,
-            }))}
+            attendance={teamPlayers.map((player) => {
+              const item = attendanceByPlayerId.get(player.id);
+
+              return {
+                id: item?.id ?? 0,
+                playerId: player.id,
+                playerName: player.name,
+                present: item?.present ?? false,
+              };
+            })}
             matchStats={wedstrijd.matchStats.map((item) => ({
               id: item.id,
               playerId: item.playerId,
