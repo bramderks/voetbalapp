@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import TeamBadge from "@/components/TeamBadge";
+import BackButton from "@/components/BackButton";
 
 export const metadata: Metadata = {
   title: "Voetbalapp",
@@ -41,10 +42,6 @@ export default function RootLayout({
               sm:px-6
             "
           >
-            {/* ==================================================
-                TEAMLOGO
-                ================================================== */}
-
             <Link
               href="/"
               aria-label="Naar Home"
@@ -57,46 +54,42 @@ export default function RootLayout({
               <TeamBadge />
             </Link>
 
-            {/* ==================================================
-                HOME
-                ================================================== */}
+            <div className="flex shrink-0 items-center gap-2">
+              <BackButton />
 
-            <Link
-              href="/"
-              aria-label="Naar Home"
-              className="
-                inline-flex
-                shrink-0
-                items-center
-                gap-2
-                rounded-xl
-                bg-[#16803c]
-                px-4
-                py-2.5
-                text-sm
-                font-bold
-                text-white
-                shadow-sm
-                transition
-                hover:bg-[#116631]
-                active:translate-y-px
-              "
-            >
-              <span
-                aria-hidden="true"
-                className="text-lg leading-none"
+              <Link
+                href="/"
+                aria-label="Naar Home"
+                className="
+                  inline-flex
+                  shrink-0
+                  items-center
+                  gap-2
+                  rounded-xl
+                  bg-[#16803c]
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-bold
+                  text-white
+                  shadow-sm
+                  transition
+                  hover:bg-[#116631]
+                  active:translate-y-px
+                "
               >
-                ⌂
-              </span>
+                <span
+                  aria-hidden="true"
+                  className="text-lg leading-none"
+                >
+                  ⌂
+                </span>
 
-              <span>Home</span>
-            </Link>
+                <span>Home</span>
+              </Link>
+            </div>
           </div>
         </header>
-
-        {/* ==================================================
-            PAGINA-INHOUD
-            ================================================== */}
 
         {children}
       </body>
