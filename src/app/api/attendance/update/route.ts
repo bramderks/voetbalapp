@@ -22,10 +22,6 @@ export async function POST(request: Request) {
 
     const present = body.present;
 
-    // ==========================================================
-    // VALIDATIE ACTIVITY
-    // ==========================================================
-
     if (!Number.isInteger(activityId) || activityId <= 0) {
       return NextResponse.json(
         {
@@ -35,10 +31,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ==========================================================
-    // VALIDATIE PLAYER
-    // ==========================================================
-
     if (!Number.isInteger(playerId) || playerId <= 0) {
       return NextResponse.json(
         {
@@ -47,10 +39,6 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    // ==========================================================
-    // ACTIVITEIT OPHALEN
-    // ==========================================================
 
     const activity = await prisma.activity.findUnique({
       where: {
@@ -67,13 +55,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ==========================================================
-    // LOCK CONTROLE
-    //
-    // Dit is de daadwerkelijke beveiliging.
-    // Een gesloten activiteit kan nooit meer worden aangepast.
-    // ==========================================================
-
     if (activity.locked) {
       return NextResponse.json(
         {
@@ -83,10 +64,6 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-
-    // ==========================================================
-    // SPELER OPHALEN
-    // ==========================================================
 
     const player = await prisma.player.findUnique({
       where: {
@@ -103,10 +80,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ==========================================================
-    // TEAM CONTROLE
-    // ==========================================================
-
     if (player.teamId !== activity.teamId) {
       return NextResponse.json(
         {
@@ -117,69 +90,28 @@ export async function POST(request: Request) {
       );
     }
 
-    // ==========================================================
-    // BESTAANDE ATTENDANCE
-    //
-    // We gebruiken bewust findFirst.
-    //
-    // De database kan op dit moment nog dubbele attendance
-    // records bevatten. Zodra die opgeschoond zijn kunnen we
-    // eventueel overstappen naar een samengestelde unique key.
-    // ==========================================================
-
-    const existing = await prisma.attendance.findFirst({
+    const attendance = await prisma.attendance.upsert({
       where: {
-        activityId,
-        playerId,
+        activityId_playerId: {
+          activityId,
+          playerId,
+        },
       },
-      orderBy: {
-        id: "asc",
+      update: {
+        present,
       },
-    });
-
-    // ==========================================================
-    // BESTAAND RECORD BIJWERKEN
-    // ==========================================================
-
-    if (existing) {
-      const updated = await prisma.attendance.update({
-        where: {
-          id: existing.id,
-        },
-
-        data: {
-          present,
-        },
-
-        include: {
-          player: true,
-          activity: true,
-        },
-      });
-
-      return NextResponse.json(updated);
-    }
-
-    // ==========================================================
-    // NIEUW RECORD AANMAKEN
-    // ==========================================================
-
-    const created = await prisma.attendance.create({
-      data: {
+      create: {
         activityId,
         playerId,
         present,
       },
-
       include: {
         player: true,
         activity: true,
       },
     });
 
-    return NextResponse.json(created, {
-      status: 201,
-    });
+    return NextResponse.json(attendance);
   } catch (error) {
     console.error(
       "POST /api/attendance/update error:",
