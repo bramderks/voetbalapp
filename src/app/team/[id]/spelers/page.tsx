@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import TeamBadge from "@/components/TeamBadge";
 
 interface Player {
@@ -9,11 +9,12 @@ interface Player {
 }
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function SpelersPage({ params }: Props) {
-  const teamId = Number(params.id);
+  const { id } = use(params);
+  const teamId = Number(id);
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export default function SpelersPage({ params }: Props) {
     }
   };
 
-  const deletePlayer = async (id: number) => {
+  const deletePlayer = async (playerId: number) => {
     try {
       setError(null);
 
@@ -110,7 +111,7 @@ export default function SpelersPage({ params }: Props) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id: playerId }),
       });
 
       const data = await response.json();
@@ -142,13 +143,10 @@ export default function SpelersPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-black text-white p-6">
-
-      {/* HEADER */}
       <div className="mb-6">
         <TeamBadge />
       </div>
 
-      {/* TITEL */}
       <h1 className="text-3xl font-bold tracking-wide mb-8">Spelers</h1>
 
       {error && (
@@ -157,17 +155,7 @@ export default function SpelersPage({ params }: Props) {
         </div>
       )}
 
-      {/* NIEUWE SPELER */}
-      <section
-        className="
-          bg-neutral-900
-          p-5
-          rounded-xl
-          border border-white
-          shadow-lg
-          mb-10
-        "
-      >
+      <section className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg mb-10">
         <h2 className="text-xl font-bold mb-4">Nieuwe speler</h2>
 
         <div className="flex gap-3">
@@ -175,69 +163,34 @@ export default function SpelersPage({ params }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Naam speler"
-            className="
-              flex-1
-              bg-black
-              border border-white
-              rounded-xl
-              p-3
-              text-white
-              placeholder-neutral-500
-            "
+            className="flex-1 bg-black border border-white rounded-xl p-3 text-white placeholder-neutral-500"
           />
           <button
             onClick={addPlayer}
-            className="
-              bg-green-600
-              hover:bg-green-500
-              transition
-              px-4
-              py-2
-              rounded-xl
-              font-bold
-            "
+            className="bg-green-600 hover:bg-green-500 transition px-4 py-2 rounded-xl font-bold"
           >
             Toevoegen
           </button>
         </div>
       </section>
 
-      {/* OVERZICHT */}
       <section className="space-y-4">
         {players.map((p) => (
           <div
             key={p.id}
-            className="
-              bg-neutral-900
-              p-5
-              rounded-xl
-              border border-white
-              flex
-              items-center
-              justify-between
-              shadow-lg
-            "
+            className="bg-neutral-900 p-5 rounded-xl border border-white flex items-center justify-between shadow-lg"
           >
             <span className="text-xl font-bold">{p.name}</span>
 
             <button
               onClick={() => deletePlayer(p.id)}
-              className="
-                bg-red-600
-                hover:bg-red-500
-                transition
-                px-4
-                py-2
-                rounded-xl
-                font-bold
-              "
+              className="bg-red-600 hover:bg-red-500 transition px-4 py-2 rounded-xl font-bold"
             >
               Verwijderen
             </button>
           </div>
         ))}
       </section>
-
     </main>
   );
 }
