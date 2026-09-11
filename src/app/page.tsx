@@ -127,6 +127,28 @@ export default async function HomePage() {
     ],
   });
 
+  const tactiekTraining = await prisma.activity.findFirst({
+    where: {
+      type: "TRAINING",
+      teamId: team?.id,
+      date: {
+        gte: vandaagString,
+      },
+    },
+    orderBy: [
+      {
+        date: "asc",
+      },
+      {
+        startTime: "asc",
+      },
+    ],
+  });
+
+  const tactiekHref = tactiekTraining
+    ? `/trainingen/${tactiekTraining.id}?tab=tactiek`
+    : "/trainingen";
+
   return (
     <main className="app-page">
       <div className="app-container">
@@ -359,6 +381,12 @@ export default async function HomePage() {
               href="/statistieken"
               label="Statistieken"
               icon="📊"
+            />
+
+            <MenuItem
+              href={tactiekHref}
+              label="Taktiek"
+              icon="📋"
             />
 
           </div>
