@@ -132,9 +132,6 @@ model TacticPosition {
 // ATTENDANCE
 //
 // Eén aanwezigheid per speler per activiteit.
-//
-// De unieke beperking voegen we pas toe nadat we bestaande
-// dubbele records hebben gecontroleerd.
 // ============================================================
 
 model Attendance {
@@ -146,6 +143,7 @@ model Attendance {
   player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
+  @@unique([activityId, playerId])
   @@index([activityId])
   @@index([playerId])
 }
