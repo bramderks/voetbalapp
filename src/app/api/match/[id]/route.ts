@@ -53,6 +53,8 @@ export async function PATCH(
       const currentScoreAgainst = match.scoreAgainst;
 
       if (
+        currentScoreFor === null ||
+        currentScoreAgainst === null ||
         !Number.isInteger(currentScoreFor) ||
         currentScoreFor < 0 ||
         !Number.isInteger(currentScoreAgainst) ||
