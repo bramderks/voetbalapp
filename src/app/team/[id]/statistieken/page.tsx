@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import TeamBadge from "@/components/TeamBadge";
 
 interface PlayerStats {
@@ -15,11 +15,12 @@ interface PlayerStats {
 }
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function StatistiekenPage({ params }: Props) {
-  const teamId = Number(params.id);
+  const { id } = use(params);
+  const teamId = Number(id);
   const [stats, setStats] = useState<PlayerStats[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,71 +29,31 @@ export default function StatistiekenPage({ params }: Props) {
 
     const load = async () => {
       try {
-        if (!Number.isInteger(teamId) || teamId <= 0) {
-          throw new Error("Ongeldig team-ID.");
-        }
-
-        const res = await fetch(`/api/stats/${teamId}`, {
-          cache: "no-store",
-        });
+        if (!Number.isInteger(teamId) || teamId <= 0) throw new Error("Ongeldig team-ID.");
+        const res = await fetch(`/api/stats/${teamId}`, { cache: "no-store" });
         const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(
-            data?.error ?? "Statistieken konden niet worden geladen."
-          );
-        }
-
+        if (!res.ok) throw new Error(data?.error ?? "Statistieken konden niet worden geladen.");
         if (!cancelled) {
           setStats(data.players ?? []);
           setError(null);
         }
       } catch (loadError) {
-        if (!cancelled) {
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : "Statistieken konden niet worden geladen."
-          );
-        }
+        if (!cancelled) setError(loadError instanceof Error ? loadError.message : "Statistieken konden niet worden geladen.");
       }
     };
 
     load();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [teamId]);
 
   return (
     <main className="min-h-screen bg-black text-white p-6">
-
-      {/* HEADER */}
-      <div className="mb-6">
-        <TeamBadge />
-      </div>
-
-      {/* TITEL */}
+      <div className="mb-6"><TeamBadge /></div>
       <h1 className="text-3xl font-bold tracking-wide mb-8">Statistieken</h1>
 
-      {error && (
-        <div className="mb-6 rounded-xl border border-red-500 bg-red-950 p-4 text-sm text-red-300">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-6 rounded-xl border border-red-500 bg-red-950 p-4 text-sm text-red-300">{error}</div>}
 
-      {/* TABEL */}
-      <div
-        className="
-          bg-neutral-900
-          p-5
-          rounded-xl
-          border border-white
-          shadow-lg
-          overflow-x-auto
-        "
-      >
+      <div className="bg-neutral-900 p-5 rounded-xl border border-white shadow-lg overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-neutral-700">
@@ -103,20 +64,12 @@ export default function StatistiekenPage({ params }: Props) {
               <th className="py-3 font-bold">Assists</th>
             </tr>
           </thead>
-
           <tbody>
             {stats.map((s) => (
-              <tr
-                key={s.playerId}
-                className="border-b border-neutral-800 hover:bg-neutral-800 transition"
-              >
+              <tr key={s.playerId} className="border-b border-neutral-800 hover:bg-neutral-800 transition">
                 <td className="py-3 font-bold">{s.name}</td>
-                <td className="py-3 text-neutral-300">
-                  {s.trainingPresent}/{s.trainingTotal}
-                </td>
-                <td className="py-3 text-neutral-300">
-                  {s.matchPresent}/{s.matchTotal}
-                </td>
+                <td className="py-3 text-neutral-300">{s.trainingPresent}/{s.trainingTotal}</td>
+                <td className="py-3 text-neutral-300">{s.matchPresent}/{s.matchTotal}</td>
                 <td className="py-3 text-green-400 font-bold">{s.goals}</td>
                 <td className="py-3 text-blue-400 font-bold">{s.assists}</td>
               </tr>
@@ -124,7 +77,6 @@ export default function StatistiekenPage({ params }: Props) {
           </tbody>
         </table>
       </div>
-
     </main>
   );
 }
