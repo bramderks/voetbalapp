@@ -39,31 +39,57 @@ export default function WedstrijdenPage({ params }: Props) {
     useState<Match | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      // Wedstrijden laden
-      const mRes = await fetch("/api/match");
-      const matchesData = await mRes.json();
-      setMatches(matchesData);
+      try {
+        if (!Number.isInteger(teamId) || teamId <= 0) {
+          throw new Error("Ongeldig team-ID.");
+        }
 
-      // Spelers laden
-      const pRes = await fetch(
-        "/api/teamPlayers?teamId=" + teamId
-      );
-      const playersData = await pRes.json();
+        const mRes = await fetch(`/api/match?teamId=${teamId}`, {
+          cache: "no-store",
+        });
+        const matchesData = await mRes.json();
 
-      const enriched = playersData.map(
-        (p: TeamPlayer) => ({
-          ...p,
-          present: null,
-          goals: 0,
-          assists: 0,
-        })
-      );
+        if (!mRes.ok) {
+          throw new Error(
+            matchesData?.error ?? "Wedstrijden konden niet worden geladen."
+          );
+        }
 
-      setPlayers(enriched);
+        const pRes = await fetch(`/api/teamPlayers?teamId=${teamId}`, {
+          cache: "no-store",
+        });
+        const playersData = await pRes.json();
+
+        if (!pRes.ok) {
+          throw new Error(
+            playersData?.error ?? "Spelers konden niet worden geladen."
+          );
+        }
+
+        if (!cancelled) {
+          setMatches(matchesData);
+          setPlayers(
+            playersData.map((p: TeamPlayer) => ({
+              ...p,
+              present: null,
+              goals: 0,
+              assists: 0,
+            }))
+          );
+        }
+      } catch (loadError) {
+        console.error(loadError);
+      }
     };
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [teamId]);
 
   const toggleAttendance = async (
@@ -71,14 +97,21 @@ export default function WedstrijdenPage({ params }: Props) {
     playerId: number,
     present: boolean | null
   ) => {
-    await fetch("/api/attendance", {
+    if (typeof present !== "boolean") return;
+
+    const response = await fetch("/api/attendance", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         activityId: matchId,
         playerId,
         present,
       }),
     });
+
+    if (!response.ok) return;
 
     setPlayers((prev) =>
       prev.map((p) =>
@@ -95,23 +128,31 @@ export default function WedstrijdenPage({ params }: Props) {
     goals: number,
     assists: number
   ) => {
-    await fetch("/api/matchstats", {
+    const safeGoals = Math.max(0, goals);
+    const safeAssists = Math.max(0, assists);
+
+    const response = await fetch("/api/matchstats", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         activityId: matchId,
         playerId,
-        goals,
-        assists,
+        goals: safeGoals,
+        assists: safeAssists,
       }),
     });
+
+    if (!response.ok) return;
 
     setPlayers((prev) =>
       prev.map((p) =>
         p.id === playerId
           ? {
               ...p,
-              goals: p.goals + goals,
-              assists: p.assists + assists,
+              goals: safeGoals,
+              assists: safeAssists,
             }
           : p
       )
@@ -233,12 +274,10 @@ export default function WedstrijdenPage({ params }: Props) {
                       hover:bg-neutral-800
                     "
                   >
-                    {/* Naam */}
                     <td className="py-3 font-bold">
                       {p.name}
                     </td>
 
-                    {/* Goals */}
                     <td className="py-3">
                       <div className="flex items-center gap-3">
                         <button
@@ -246,8 +285,8 @@ export default function WedstrijdenPage({ params }: Props) {
                             updateStats(
                               selectedMatch.id,
                               p.id,
-                              -1,
-                              0
+                              p.goals - 1,
+                              p.assists
                             )
                           }
                           className="
@@ -271,8 +310,8 @@ export default function WedstrijdenPage({ params }: Props) {
                             updateStats(
                               selectedMatch.id,
                               p.id,
-                              1,
-                              0
+                              p.goals + 1,
+                              p.assists
                             )
                           }
                           className="
@@ -289,7 +328,6 @@ export default function WedstrijdenPage({ params }: Props) {
                       </div>
                     </td>
 
-                    {/* Assists */}
                     <td className="py-3">
                       <div className="flex items-center gap-3">
                         <button
@@ -297,8 +335,8 @@ export default function WedstrijdenPage({ params }: Props) {
                             updateStats(
                               selectedMatch.id,
                               p.id,
-                              0,
-                              -1
+                              p.goals,
+                              p.assists - 1
                             )
                           }
                           className="
@@ -322,8 +360,8 @@ export default function WedstrijdenPage({ params }: Props) {
                             updateStats(
                               selectedMatch.id,
                               p.id,
-                              0,
-                              1
+                              p.goals,
+                              p.assists + 1
                             )
                           }
                           className="
@@ -340,7 +378,6 @@ export default function WedstrijdenPage({ params }: Props) {
                       </div>
                     </td>
 
-                    {/* Aanwezigheid */}
                     <td className="py-3">
                       <Toggle
                         value={p.present}
