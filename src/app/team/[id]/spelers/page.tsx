@@ -9,48 +9,135 @@ interface Player {
 }
 
 interface Props {
-  params: { teamId: string };
+  params: { id: string };
 }
 
 export default function SpelersPage({ params }: Props) {
-  const teamId = Number(params.teamId);
+  const teamId = Number(params.id);
   const [players, setPlayers] = useState<Player[]>([]);
   const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadPlayers = async () => {
-      const res = await fetch("/api/teamPlayers?teamId=" + teamId);
-      const data = await res.json();
-      setPlayers(data);
+      try {
+        if (!Number.isInteger(teamId) || teamId <= 0) {
+          throw new Error("Ongeldig team-ID.");
+        }
+
+        const res = await fetch(`/api/teamPlayers?teamId=${teamId}`, {
+          cache: "no-store",
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data?.error ?? "Spelers konden niet worden geladen.");
+        }
+
+        if (!cancelled) {
+          setPlayers(data);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Spelers konden niet worden geladen."
+          );
+        }
+      }
     };
 
     loadPlayers();
+
+    return () => {
+      cancelled = true;
+    };
   }, [teamId]);
 
   const addPlayer = async () => {
-    if (!name.trim()) return;
+    if (!name.trim() || !Number.isInteger(teamId) || teamId <= 0) return;
 
-    await fetch("/api/players", {
-      method: "POST",
-      body: JSON.stringify({ name, teamId }),
-    });
+    try {
+      setError(null);
 
-    setName("");
+      const response = await fetch("/api/players", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, teamId }),
+      });
 
-    const res = await fetch("/api/teamPlayers?teamId=" + teamId);
-    const data = await res.json();
-    setPlayers(data);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Speler kon niet worden toegevoegd.");
+      }
+
+      setName("");
+
+      const res = await fetch(`/api/teamPlayers?teamId=${teamId}`, {
+        cache: "no-store",
+      });
+      const playersData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          playersData?.error ?? "Spelers konden niet worden geladen."
+        );
+      }
+
+      setPlayers(playersData);
+    } catch (addError) {
+      setError(
+        addError instanceof Error
+          ? addError.message
+          : "Speler kon niet worden toegevoegd."
+      );
+    }
   };
 
   const deletePlayer = async (id: number) => {
-    await fetch("/api/players", {
-      method: "DELETE",
-      body: JSON.stringify({ id }),
-    });
+    try {
+      setError(null);
 
-    const res = await fetch("/api/teamPlayers?teamId=" + teamId);
-    const data = await res.json();
-    setPlayers(data);
+      const response = await fetch("/api/players", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Speler kon niet worden verwijderd.");
+      }
+
+      const res = await fetch(`/api/teamPlayers?teamId=${teamId}`, {
+        cache: "no-store",
+      });
+      const playersData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          playersData?.error ?? "Spelers konden niet worden geladen."
+        );
+      }
+
+      setPlayers(playersData);
+    } catch (deleteError) {
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Speler kon niet worden verwijderd."
+      );
+    }
   };
 
   return (
@@ -64,14 +151,20 @@ export default function SpelersPage({ params }: Props) {
       {/* TITEL */}
       <h1 className="text-3xl font-bold tracking-wide mb-8">Spelers</h1>
 
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-500 bg-red-950 p-4 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
       {/* NIEUWE SPELER */}
       <section
         className="
-          bg-neutral-900 
-          p-5 
-          rounded-xl 
-          border border-white 
-          shadow-lg 
+          bg-neutral-900
+          p-5
+          rounded-xl
+          border border-white
+          shadow-lg
           mb-10
         "
       >
@@ -83,11 +176,11 @@ export default function SpelersPage({ params }: Props) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Naam speler"
             className="
-              flex-1 
-              bg-black 
-              border border-white 
-              rounded-xl 
-              p-3 
+              flex-1
+              bg-black
+              border border-white
+              rounded-xl
+              p-3
               text-white
               placeholder-neutral-500
             "
@@ -95,12 +188,12 @@ export default function SpelersPage({ params }: Props) {
           <button
             onClick={addPlayer}
             className="
-              bg-green-600 
-              hover:bg-green-500 
-              transition 
-              px-4 
-              py-2 
-              rounded-xl 
+              bg-green-600
+              hover:bg-green-500
+              transition
+              px-4
+              py-2
+              rounded-xl
               font-bold
             "
           >
@@ -115,12 +208,12 @@ export default function SpelersPage({ params }: Props) {
           <div
             key={p.id}
             className="
-              bg-neutral-900 
-              p-5 
-              rounded-xl 
-              border border-white 
-              flex 
-              items-center 
+              bg-neutral-900
+              p-5
+              rounded-xl
+              border border-white
+              flex
+              items-center
               justify-between
               shadow-lg
             "
@@ -130,12 +223,12 @@ export default function SpelersPage({ params }: Props) {
             <button
               onClick={() => deletePlayer(p.id)}
               className="
-                bg-red-600 
-                hover:bg-red-500 
-                transition 
-                px-4 
-                py-2 
-                rounded-xl 
+                bg-red-600
+                hover:bg-red-500
+                transition
+                px-4
+                py-2
+                rounded-xl
                 font-bold
               "
             >
