@@ -33,22 +33,11 @@ export async function GET() {
       (activity) => activity.type === "MATCH"
     );
 
-    const trainingPresentByPlayer = new Set<number>();
-    const matchPresentByPlayer = new Set<number>();
+    const trainingPresentCounts = new Map<number, number>();
+    const matchPresentCounts = new Map<number, number>();
     const goalsByPlayer = new Map<number, number>();
     const assistsByPlayer = new Map<number, number>();
 
-    for (const training of trainingen) {
-      for (const attendance of training.attendance) {
-        if (attendance.present) {
-          trainingPresentByPlayer.add(
-            attendance.playerId
-          );
-        }
-      }
-    }
-
-    const trainingPresentCounts = new Map<number, number>();
     for (const training of trainingen) {
       for (const attendance of training.attendance) {
         if (!attendance.present) continue;
@@ -60,20 +49,16 @@ export async function GET() {
       }
     }
 
-    const matchPresentCounts = new Map<number, number>();
     for (const wedstrijd of wedstrijden) {
       for (const attendance of wedstrijd.attendance) {
         if (!attendance.present) continue;
 
-        matchPresentByPlayer.add(attendance.playerId);
         matchPresentCounts.set(
           attendance.playerId,
           (matchPresentCounts.get(attendance.playerId) ?? 0) + 1
         );
       }
-    }
 
-    for (const wedstrijd of wedstrijden) {
       for (const stat of wedstrijd.matchStats) {
         goalsByPlayer.set(
           stat.playerId,
@@ -96,11 +81,6 @@ export async function GET() {
       goals: goalsByPlayer.get(player.id) ?? 0,
       assists: assistsByPlayer.get(player.id) ?? 0,
     }));
-
-    // Keep these sets intentionally materialized so the presence indexes
-    // remain explicit and easy to extend without changing the response shape.
-    void trainingPresentByPlayer;
-    void matchPresentByPlayer;
 
     return NextResponse.json(result);
   } catch (error) {
