@@ -5,7 +5,7 @@
 
   "scripts": {
     "dev": "next dev",
-    "build": "prisma migrate deploy && next build",
+    "build": "npm run lint && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint .",
 
@@ -39,7 +39,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "autoprefixer": "^10.5.4",
-    "eslint": "^9.39.1",
+    "eslint": "10.10.0",
     "eslint-config-next": "16.3.4",
     "postcss": "^8.5.26",
     "prisma": "^5.18.0",
