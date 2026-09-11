@@ -83,6 +83,28 @@ export async function buildStats() {
     0
   );
 
+  const results = matches.reduce(
+    (summary, match) => {
+      if (
+        match.scoreFor === null ||
+        match.scoreAgainst === null
+      ) {
+        return summary;
+      }
+
+      if (match.scoreFor > match.scoreAgainst) {
+        summary.wins += 1;
+      } else if (match.scoreFor === match.scoreAgainst) {
+        summary.draws += 1;
+      } else {
+        summary.losses += 1;
+      }
+
+      return summary;
+    },
+    { wins: 0, draws: 0, losses: 0 }
+  );
+
   const totalTrainings = trainings.length;
 
   const trainingsWithAttendance = trainings.filter(
@@ -135,11 +157,6 @@ export async function buildStats() {
       )
     : 0;
 
-  // Wedstrijdresultaten zijn nog geen onderdeel van het datamodel.
-  const wins = 0;
-  const draws = 0;
-  const losses = 0;
-
   return {
     team: {
       totalTrainings,
@@ -150,9 +167,9 @@ export async function buildStats() {
       matchAttendanceRate,
       totalGoals,
       totalAssists,
-      wins,
-      draws,
-      losses,
+      wins: results.wins,
+      draws: results.draws,
+      losses: results.losses,
     },
 
     players: playerRecords.map((player) => {
