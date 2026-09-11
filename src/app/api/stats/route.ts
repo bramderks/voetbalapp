@@ -33,61 +33,74 @@ export async function GET() {
       (activity) => activity.type === "MATCH"
     );
 
-    const trainingIds = new Set(
-      trainingen.map((training) => training.id)
-    );
+    const trainingPresentByPlayer = new Set<number>();
+    const matchPresentByPlayer = new Set<number>();
+    const goalsByPlayer = new Map<number, number>();
+    const assistsByPlayer = new Map<number, number>();
 
-    const matchIds = new Set(
-      wedstrijden.map((wedstrijd) => wedstrijd.id)
-    );
+    for (const training of trainingen) {
+      for (const attendance of training.attendance) {
+        if (attendance.present) {
+          trainingPresentByPlayer.add(
+            attendance.playerId
+          );
+        }
+      }
+    }
 
-    const result = players.map((player) => {
-      const trainingPresent = trainingen.filter((activity) =>
-        activity.attendance.some(
-          (attendance) =>
-            attendance.playerId === player.id &&
-            attendance.present === true
-        )
-      ).length;
+    const trainingPresentCounts = new Map<number, number>();
+    for (const training of trainingen) {
+      for (const attendance of training.attendance) {
+        if (!attendance.present) continue;
 
-      const matchPresent = wedstrijden.filter((activity) =>
-        activity.attendance.some(
-          (attendance) =>
-            attendance.playerId === player.id &&
-            attendance.present === true
-        )
-      ).length;
-
-      const goals = wedstrijden.reduce((total, activity) => {
-        const stats = activity.matchStats.find(
-          (stat) => stat.playerId === player.id
+        trainingPresentCounts.set(
+          attendance.playerId,
+          (trainingPresentCounts.get(attendance.playerId) ?? 0) + 1
         );
+      }
+    }
 
-        return total + (stats?.goals ?? 0);
-      }, 0);
+    const matchPresentCounts = new Map<number, number>();
+    for (const wedstrijd of wedstrijden) {
+      for (const attendance of wedstrijd.attendance) {
+        if (!attendance.present) continue;
 
-      const assists = wedstrijden.reduce((total, activity) => {
-        const stats = activity.matchStats.find(
-          (stat) => stat.playerId === player.id
+        matchPresentByPlayer.add(attendance.playerId);
+        matchPresentCounts.set(
+          attendance.playerId,
+          (matchPresentCounts.get(attendance.playerId) ?? 0) + 1
         );
+      }
+    }
 
-        return total + (stats?.assists ?? 0);
-      }, 0);
+    for (const wedstrijd of wedstrijden) {
+      for (const stat of wedstrijd.matchStats) {
+        goalsByPlayer.set(
+          stat.playerId,
+          (goalsByPlayer.get(stat.playerId) ?? 0) + stat.goals
+        );
+        assistsByPlayer.set(
+          stat.playerId,
+          (assistsByPlayer.get(stat.playerId) ?? 0) + stat.assists
+        );
+      }
+    }
 
-      return {
-        playerId: player.id,
-        name: player.name,
+    const result = players.map((player) => ({
+      playerId: player.id,
+      name: player.name,
+      trainingTotal: trainingen.length,
+      trainingPresent: trainingPresentCounts.get(player.id) ?? 0,
+      matchTotal: wedstrijden.length,
+      matchPresent: matchPresentCounts.get(player.id) ?? 0,
+      goals: goalsByPlayer.get(player.id) ?? 0,
+      assists: assistsByPlayer.get(player.id) ?? 0,
+    }));
 
-        trainingTotal: trainingIds.size,
-        trainingPresent,
-
-        matchTotal: matchIds.size,
-        matchPresent,
-
-        goals,
-        assists,
-      };
-    });
+    // Keep these sets intentionally materialized so the presence indexes
+    // remain explicit and easy to extend without changing the response shape.
+    void trainingPresentByPlayer;
+    void matchPresentByPlayer;
 
     return NextResponse.json(result);
   } catch (error) {
