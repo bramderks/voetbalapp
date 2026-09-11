@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import TeamBadge from "@/components/TeamBadge";
@@ -56,10 +56,15 @@ function formatLockedDate(dateString: string | null) {
   });
 }
 
-export default function TrainingDetail({ params }: { params: { id: string } }) {
+export default function TrainingDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") === "tactiek" ? "tactiek" : "aanwezigheid";
-  const activityId = Number(params.id);
+  const activityId = Number(id);
   const [training, setTraining] = useState<Training | null>(null);
   const [attendance, setAttendance] = useState<Record<number, boolean | undefined>>({});
   const [loading, setLoading] = useState(true);
