@@ -14,6 +14,15 @@ export default defineConfig([
       ...nextPlugin.configs.recommended.rules,
     },
   },
+  {
+    files: ["*.config.js", "*.config.cjs"],
+    languageOptions: {
+      globals: {
+        module: "readonly",
+        require: "readonly",
+      },
+    },
+  },
   globalIgnores([
     "node_modules/**",
     ".next/**",
