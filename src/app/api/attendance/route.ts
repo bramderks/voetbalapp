@@ -39,9 +39,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Training controleren.
-     */
     const training = await prisma.activity.findFirst({
       where: {
         id: activityId,
@@ -60,9 +57,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Gesloten trainingen mogen niet meer worden gewijzigd.
-     */
     if (training.locked) {
       return NextResponse.json(
         {
@@ -75,12 +69,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Speler controleren.
-     *
-     * Een speler mag alleen aanwezigheid krijgen voor een
-     * training van zijn eigen team.
-     */
     const player = await prisma.player.findFirst({
       where: {
         id: playerId,
@@ -100,36 +88,17 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Omdat activityId + playerId momenteel geen samengestelde
-     * unique key in Prisma is, zoeken we het bestaande record
-     * op en werken we het daarna bij.
-     */
-    const existing = await prisma.attendance.findFirst({
+    const attendance = await prisma.attendance.upsert({
       where: {
-        activityId,
-        playerId,
+        activityId_playerId: {
+          activityId,
+          playerId,
+        },
       },
-    });
-
-    if (existing) {
-      const updated = await prisma.attendance.update({
-        where: {
-          id: existing.id,
-        },
-        data: {
-          present,
-        },
-        include: {
-          player: true,
-        },
-      });
-
-      return NextResponse.json(updated);
-    }
-
-    const created = await prisma.attendance.create({
-      data: {
+      update: {
+        present,
+      },
+      create: {
         activityId,
         playerId,
         present,
@@ -139,7 +108,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(created);
+    return NextResponse.json(attendance);
   } catch (error) {
     console.error("Fout bij opslaan aanwezigheid:", error);
 
