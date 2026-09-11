@@ -33,6 +33,7 @@ model Player {
   stats      PlayerStats[]
   attendance Attendance[]
   matchStats MatchStat[]
+  tactics    TacticPosition[]
 }
 
 // ============================================================
@@ -85,16 +86,46 @@ model Activity {
   locked   Boolean   @default(false)
   lockedAt DateTime?
 
+  // Tactiek / opstelling. Het aantal is inclusief de keeper.
+  tacticPlayerCount Int @default(8)
+
   teamId Int
   team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   attendance Attendance[]
   matchStats MatchStat[]
+  tactics    TacticPosition[]
 
   @@index([teamId])
   @@index([date])
   @@index([type])
   @@index([locked])
+}
+
+// ============================================================
+// TACTIC POSITION
+//
+// Persistente positie van een speler binnen de tactiek van een
+// training. x/y zijn percentages binnen het betreffende gebied.
+// zone = FIELD, BENCH of POOL.
+// ============================================================
+
+model TacticPosition {
+  id         Int    @id @default(autoincrement())
+  activityId Int
+  playerId   Int
+  zone       String @default("POOL")
+  x          Float  @default(50)
+  y          Float  @default(50)
+  benchSlot  Int?
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, playerId])
+  @@index([activityId])
+  @@index([playerId])
+  @@index([activityId, zone])
 }
 
 // ============================================================
