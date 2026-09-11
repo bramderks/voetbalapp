@@ -74,7 +74,7 @@ export default function WedstrijdenPage({ params }: Props) {
   const updateStats = async (matchId: number, playerId: number, goals: number, assists: number) => {
     const safeGoals = Math.max(0, goals);
     const safeAssists = Math.max(0, assists);
-    const response = await fetch("/api/matchstats", {
+    const response = await fetch("/api/match-stats", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ activityId: matchId, playerId, goals: safeGoals, assists: safeAssists }),
