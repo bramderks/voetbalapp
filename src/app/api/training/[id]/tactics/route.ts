@@ -33,69 +33,51 @@ async function getTraining(activityId: number) {
       id: true,
       teamId: true,
       tacticPlayerCount: true,
-      tactics: {
-        select: {
-          playerId: true,
-          zone: true,
-          x: true,
-          y: true,
-          benchSlot: true,
-        },
-      },
+      tactics: { select: { playerId: true, zone: true, x: true, y: true, benchSlot: true } },
     },
   });
 }
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const activityId = getActivityId(params);
+  try {
+    const activityId = getActivityId(await params);
+    if (!activityId) return NextResponse.json({ error: "Ongeldig training-ID." }, { status: 400 });
 
-  if (!activityId) {
-    return NextResponse.json({ error: "Ongeldig training-ID." }, { status: 400 });
+    const training = await getTraining(activityId);
+    if (!training) return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
+
+    return NextResponse.json({
+      playerCount: Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, training.tacticPlayerCount)),
+      positions: training.tactics,
+    });
+  } catch (error) {
+    console.error("GET /api/training/[id]/tactics error:", error);
+    return NextResponse.json({ error: "Tactiek kon niet worden opgehaald." }, { status: 500 });
   }
-
-  const training = await getTraining(activityId);
-  if (!training) {
-    return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
-  }
-
-  return NextResponse.json({
-    playerCount: Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, training.tacticPlayerCount)),
-    positions: training.tactics,
-  });
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const activityId = getActivityId(params);
-    if (!activityId) {
-      return NextResponse.json({ error: "Ongeldig training-ID." }, { status: 400 });
-    }
+    const activityId = getActivityId(await params);
+    if (!activityId) return NextResponse.json({ error: "Ongeldig training-ID." }, { status: 400 });
 
     const body = await request.json().catch(() => null);
     const playerCount = body?.playerCount;
     const positions = body?.positions;
 
     if (!Number.isInteger(playerCount) || playerCount < MIN_PLAYERS || playerCount > MAX_PLAYERS) {
-      return NextResponse.json(
-        { error: `Kies een aantal spelers tussen ${MIN_PLAYERS} en ${MAX_PLAYERS}.` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Kies een aantal spelers tussen ${MIN_PLAYERS} en ${MAX_PLAYERS}.` }, { status: 400 });
     }
-
-    if (!Array.isArray(positions)) {
-      return NextResponse.json({ error: "Ongeldige tactiekgegevens." }, { status: 400 });
-    }
+    if (!Array.isArray(positions)) return NextResponse.json({ error: "Ongeldige tactiekgegevens." }, { status: 400 });
 
     const training = await getTraining(activityId);
-    if (!training) {
-      return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
-    }
+    if (!training) return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
 
     const players = await prisma.player.findMany({
       where: { teamId: training.teamId },
@@ -108,8 +90,7 @@ export async function PUT(
 
     for (const raw of positions) {
       if (!Number.isInteger(raw?.playerId) || seen.has(raw.playerId)) continue;
-      if (!playerMap.has(raw.playerId)) continue;
-      if (!VALID_ZONES.has(raw.zone)) continue;
+      if (!playerMap.has(raw.playerId) || !VALID_ZONES.has(raw.zone)) continue;
 
       const zone = raw.zone as PositionInput["zone"];
       const benchSlot = zone === "BENCH" && Number.isInteger(raw.benchSlot) && raw.benchSlot >= 1 && raw.benchSlot <= MAX_BENCH
@@ -153,13 +134,8 @@ export async function PUT(
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.activity.update({
-        where: { id: activityId },
-        data: { tacticPlayerCount: playerCount },
-      });
-
+      await tx.activity.update({ where: { id: activityId }, data: { tacticPlayerCount: playerCount } });
       await tx.tacticPosition.deleteMany({ where: { activityId } });
-
       if (normalized.length > 0) {
         await tx.tacticPosition.createMany({
           data: normalized.map((position) => ({
@@ -174,11 +150,7 @@ export async function PUT(
       }
     });
 
-    return NextResponse.json({
-      success: true,
-      playerCount,
-      positions: normalized,
-    });
+    return NextResponse.json({ success: true, playerCount, positions: normalized });
   } catch (error) {
     console.error("Fout bij opslaan tactiek:", error);
     return NextResponse.json({ error: "Tactiek kon niet worden opgeslagen." }, { status: 500 });
