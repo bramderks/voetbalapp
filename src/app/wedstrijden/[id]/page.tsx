@@ -2,6 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import TeamBadge from "@/components/TeamBadge";
 import MatchLockControl from "@/components/MatchLockControl";
+import MatchScore from "@/components/MatchScore";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,14 @@ export default async function WedstrijdDetailPage({ params }: PageProps) {
             <div><p className="text-xs font-bold uppercase tracking-wider text-[#647067]">Wedstrijd</p><p className="mt-1 font-semibold text-[#17211b]">{wedstrijd.home === true ? "Thuiswedstrijd" : wedstrijd.home === false ? "Uitwedstrijd" : "Nog niet bepaald"}</p></div>
           </div>
           <div className="mt-6 border-t border-[#e1e7e2] pt-5"><div className="flex items-center justify-between gap-4"><div><p className="text-sm font-bold text-[#17211b]">Status</p><p className="mt-1 text-sm text-[#647067]">{wedstrijd.locked ? "Deze wedstrijd is gesloten." : "Deze wedstrijd staat nog open voor registratie."}</p></div><span className={wedstrijd.locked ? "inline-flex rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-red-600" : "inline-flex rounded-full bg-[#e9f7ee] px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#16803c]"}>{wedstrijd.locked ? "Gesloten" : "Open"}</span></div></div>
+        </section>
+
+        <section className="app-card mt-6 p-6">
+          <div className="flex items-center justify-between gap-4"><div><h2 className="text-lg font-bold text-[#17211b]">Uitslag</h2><p className="mt-1 text-sm text-[#647067]">{wedstrijd.scoreFor !== null && wedstrijd.scoreAgainst !== null ? `SCE ${wedstrijd.scoreFor} – ${wedstrijd.scoreAgainst} ${wedstrijd.opponent ?? "tegenstander"}` : "Nog geen uitslag vastgelegd."}</p></div><div className="text-2xl">🏆</div></div>
+        </section>
+
+        <section className="app-card mt-6 overflow-hidden">
+          <MatchScore activityId={wedstrijd.id} locked={wedstrijd.locked} scoreFor={wedstrijd.scoreFor} scoreAgainst={wedstrijd.scoreAgainst} />
         </section>
 
         <section className="app-card mt-6 p-6">
