@@ -4,11 +4,30 @@ import prisma from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const teamIdParam = searchParams.get("teamId");
+
+    let teamId: number | undefined;
+
+    if (teamIdParam) {
+      const parsedTeamId = Number(teamIdParam);
+
+      if (!Number.isInteger(parsedTeamId) || parsedTeamId <= 0) {
+        return NextResponse.json(
+          { error: "Ongeldig teamId." },
+          { status: 400 }
+        );
+      }
+
+      teamId = parsedTeamId;
+    }
+
     const matches = await prisma.activity.findMany({
       where: {
         type: "MATCH",
+        ...(teamId !== undefined ? { teamId } : {}),
       },
       orderBy: [
         {
@@ -40,9 +59,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const date = String(body.date ?? "");
-    const startTime = String(body.startTime ?? "");
-    const endTime = String(body.endTime ?? "");
+    const date = String(body.date ?? "").trim();
+    const startTime = String(body.startTime ?? "").trim();
+    const endTime = String(body.endTime ?? "").trim();
 
     const opponent =
       typeof body.opponent === "string" && body.opponent.trim()
