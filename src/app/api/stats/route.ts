@@ -6,22 +6,11 @@ export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    // ==========================================================
-    // SPELERS
-    // ==========================================================
-
     const players = await prisma.player.findMany({
       orderBy: {
         name: "asc",
       },
     });
-
-    // ==========================================================
-    // ALLEEN GESLOTEN ACTIVITEITEN
-    //
-    // Een activiteit telt pas mee voor de definitieve
-    // statistieken wanneer deze is vergrendeld.
-    // ==========================================================
 
     const activiteiten = await prisma.activity.findMany({
       where: {
@@ -36,19 +25,23 @@ export async function GET() {
       },
     });
 
-    // ==========================================================
-    // STATISTIEKEN PER SPELER
-    // ==========================================================
+    const trainingen = activiteiten.filter(
+      (activity) => activity.type === "TRAINING"
+    );
+
+    const wedstrijden = activiteiten.filter(
+      (activity) => activity.type === "MATCH"
+    );
+
+    const trainingIds = new Set(
+      trainingen.map((training) => training.id)
+    );
+
+    const matchIds = new Set(
+      wedstrijden.map((wedstrijd) => wedstrijd.id)
+    );
 
     const result = players.map((player) => {
-      // --------------------------------------------------------
-      // TRAININGEN
-      // --------------------------------------------------------
-
-      const trainingen = activiteiten.filter(
-        (activity) => activity.type === "TRAINING"
-      );
-
       const trainingPresent = trainingen.filter((activity) =>
         activity.attendance.some(
           (attendance) =>
@@ -56,14 +49,6 @@ export async function GET() {
             attendance.present === true
         )
       ).length;
-
-      // --------------------------------------------------------
-      // WEDSTRIJDEN
-      // --------------------------------------------------------
-
-      const wedstrijden = activiteiten.filter(
-        (activity) => activity.type === "MATCH"
-      );
 
       const matchPresent = wedstrijden.filter((activity) =>
         activity.attendance.some(
@@ -73,13 +58,6 @@ export async function GET() {
         )
       ).length;
 
-      // --------------------------------------------------------
-      // GOALS
-        //
-        // Alleen MatchStat-records van gesloten wedstrijden
-        // worden meegenomen.
-        // --------------------------------------------------------
-
       const goals = wedstrijden.reduce((total, activity) => {
         const stats = activity.matchStats.find(
           (stat) => stat.playerId === player.id
@@ -87,10 +65,6 @@ export async function GET() {
 
         return total + (stats?.goals ?? 0);
       }, 0);
-
-      // --------------------------------------------------------
-      // ASSISTS
-      // --------------------------------------------------------
 
       const assists = wedstrijden.reduce((total, activity) => {
         const stats = activity.matchStats.find(
@@ -104,10 +78,10 @@ export async function GET() {
         playerId: player.id,
         name: player.name,
 
-        trainingTotal: trainingen.length,
+        trainingTotal: trainingIds.size,
         trainingPresent,
 
-        matchTotal: wedstrijden.length,
+        matchTotal: matchIds.size,
         matchPresent,
 
         goals,
