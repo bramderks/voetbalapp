@@ -520,7 +520,8 @@ export default function MatchRegistration({
                 <button
                   type="button"
                   disabled={
-                    locked || saving
+                    locked ||
+                    saving
                   }
                   onClick={() =>
                     changeGoals(
@@ -612,7 +613,8 @@ export default function MatchRegistration({
                 <button
                   type="button"
                   disabled={
-                    locked || saving
+                    locked ||
+                    saving
                   }
                   onClick={() =>
                     changeAssists(
