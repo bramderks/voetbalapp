@@ -82,7 +82,6 @@ export async function GET(req: Request) {
   }
 }
 
-
 /**
  * POST
  *
@@ -144,6 +143,17 @@ export async function POST(req: Request) {
       );
     }
 
+    if (
+      body.home !== undefined &&
+      body.home !== null &&
+      typeof body.home !== "boolean"
+    ) {
+      return NextResponse.json(
+        { error: "home moet true, false of null zijn." },
+        { status: 400 }
+      );
+    }
+
     const team = await prisma.team.findUnique({
       where: { id: teamId },
     });
@@ -164,9 +174,10 @@ export async function POST(req: Request) {
           ? body.opponent.trim()
           : null;
 
-      if (body.home !== undefined && body.home !== null) {
-        home = Boolean(body.home);
-      }
+      home =
+        body.home === undefined || body.home === null
+          ? null
+          : body.home;
     }
 
     const created = await prisma.activity.create({
@@ -198,7 +209,6 @@ export async function POST(req: Request) {
     );
   }
 }
-
 
 /**
  * PATCH
@@ -311,10 +321,14 @@ export async function PATCH(req: Request) {
     }
 
     if (body.home !== undefined) {
-      data.home =
-        body.home === null
-          ? null
-          : Boolean(body.home);
+      if (body.home !== null && typeof body.home !== "boolean") {
+        return NextResponse.json(
+          { error: "home moet true, false of null zijn." },
+          { status: 400 }
+        );
+      }
+
+      data.home = body.home;
     }
 
     const updated = await prisma.activity.update({
