@@ -42,7 +42,6 @@ export async function buildStats() {
   const trainings = activities.filter(
     (activity) => activity.type === "TRAINING"
   );
-
   const matches = activities.filter(
     (activity) => activity.type === "MATCH"
   );
@@ -59,6 +58,10 @@ export async function buildStats() {
       name: "asc",
     },
   });
+
+  const activityTypeById = new Map(
+    activities.map((activity) => [activity.id, activity.type])
+  );
 
   const totalGoals = matches.reduce(
     (sum, activity) =>
@@ -132,14 +135,7 @@ export async function buildStats() {
       )
     : 0;
 
-  /*
-   * Wedstrijdresultaten worden op dit moment niet meer uit
-   * Activity.status gehaald, omdat status geen onderdeel meer
-   * is van het nieuwe datamodel.
-   *
-   * Deze blijven voorlopig op 0 totdat we de nieuwe
-   * wedstrijdresultaat-structuur toevoegen.
-   */
+  // Wedstrijdresultaten zijn nog geen onderdeel van het datamodel.
   const wins = 0;
   const draws = 0;
   const losses = 0;
@@ -160,33 +156,23 @@ export async function buildStats() {
     },
 
     players: playerRecords.map((player) => {
-      const playerTrainingAttendances =
-        player.attendance.filter((attendance) => {
-          const activity = activities.find(
-            (item) => item.id === attendance.activityId
-          );
+      const playerTrainingAttendances = player.attendance.filter(
+        (attendance) =>
+          activityTypeById.get(attendance.activityId) === "TRAINING"
+      );
 
-          return activity?.type === "TRAINING";
-        });
+      const playerMatchAttendances = player.attendance.filter(
+        (attendance) =>
+          activityTypeById.get(attendance.activityId) === "MATCH"
+      );
 
-      const playerMatchAttendances =
-        player.attendance.filter((attendance) => {
-          const activity = activities.find(
-            (item) => item.id === attendance.activityId
-          );
+      const trainingPresent = playerTrainingAttendances.filter(
+        (attendance) => attendance.present
+      ).length;
 
-          return activity?.type === "MATCH";
-        });
-
-      const trainingPresent =
-        playerTrainingAttendances.filter(
-          (attendance) => attendance.present
-        ).length;
-
-      const matchPresent =
-        playerMatchAttendances.filter(
-          (attendance) => attendance.present
-        ).length;
+      const matchPresent = playerMatchAttendances.filter(
+        (attendance) => attendance.present
+      ).length;
 
       return {
         id: player.id,
