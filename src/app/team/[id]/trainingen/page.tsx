@@ -30,30 +30,93 @@ export default function TrainingenPage({ params }: Props) {
     useState<Training | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      // TRAININGEN LADEN
-      const tRes = await fetch("/api/training");
-      const trainingsData = await tRes.json();
-      setTrainings(trainingsData);
+      try {
+        if (!Number.isInteger(teamId) || teamId <= 0) {
+          throw new Error("Ongeldig team-ID.");
+        }
 
-      // SPELERS LADEN
-      const pRes = await fetch(
-        "/api/teamPlayers?teamId=" + teamId
-      );
-      const playersData = await pRes.json();
+        const tRes = await fetch(`/api/training?teamId=${teamId}`, {
+          cache: "no-store",
+        });
+        const trainingsData = await tRes.json();
 
-      const enriched = playersData.map(
-        (p: { id: number; name: string }) => ({
-          ...p,
-          present: null,
-        })
-      );
+        if (!tRes.ok) {
+          throw new Error(
+            trainingsData?.error ?? "Trainingen konden niet worden geladen."
+          );
+        }
 
-      setPlayers(enriched);
+        const pRes = await fetch(`/api/teamPlayers?teamId=${teamId}`, {
+          cache: "no-store",
+        });
+        const playersData = await pRes.json();
+
+        if (!pRes.ok) {
+          throw new Error(
+            playersData?.error ?? "Spelers konden niet worden geladen."
+          );
+        }
+
+        if (!cancelled) {
+          setTrainings(trainingsData);
+          setPlayers(
+            playersData.map((p: { id: number; name: string }) => ({
+              ...p,
+              present: null,
+            }))
+          );
+        }
+      } catch (loadError) {
+        console.error(loadError);
+      }
     };
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [teamId]);
+
+  const loadAttendance = async (trainingId: number) => {
+    try {
+      const response = await fetch(
+        `/api/attendance/byActivity/${trainingId}`,
+        { cache: "no-store" }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ?? "Aanwezigheid kon niet worden geladen."
+        );
+      }
+
+      const attendanceByPlayer = new Map<number, boolean>();
+      for (const record of Array.isArray(data) ? data : []) {
+        attendanceByPlayer.set(record.playerId, record.present);
+      }
+
+      setPlayers((current) =>
+        current.map((player) => ({
+          ...player,
+          present: attendanceByPlayer.has(player.id)
+            ? attendanceByPlayer.get(player.id) ?? null
+            : null,
+        }))
+      );
+    } catch (loadError) {
+      console.error(loadError);
+    }
+  };
+
+  const selectTraining = (training: Training) => {
+    setSelectedTraining(training);
+    void loadAttendance(training.id);
+  };
 
   const isPast = (training: Training) =>
     new Date(training.date) < new Date();
@@ -63,14 +126,21 @@ export default function TrainingenPage({ params }: Props) {
     playerId: number,
     present: boolean | null
   ) => {
-    await fetch("/api/attendance", {
+    if (typeof present !== "boolean") return;
+
+    const response = await fetch("/api/attendance", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         activityId: trainingId,
         playerId,
         present,
       }),
     });
+
+    if (!response.ok) return;
 
     setPlayers((prev) =>
       prev.map((p) =>
@@ -101,7 +171,7 @@ export default function TrainingenPage({ params }: Props) {
           {trainings.map((t) => (
             <li key={t.id}>
               <button
-                onClick={() => setSelectedTraining(t)}
+                onClick={() => selectTraining(t)}
                 className="
                   w-full
                   rounded-xl
