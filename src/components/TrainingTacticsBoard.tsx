@@ -227,7 +227,7 @@ export default function TrainingTacticsBoard({ activityId, players }: { activity
     const fieldRect = fieldRef.current?.getBoundingClientRect();
     const benchRect = benchRef.current?.getBoundingClientRect();
     const poolRect = poolRef.current?.getBoundingClientRect();
-    const inside = (rect: DOMRect | null) => rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+    const inside = (rect: DOMRect | null | undefined) => Boolean(rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom);
     const source = positions.find((position) => position.playerId === dragged);
     if (!source) {
       setDrag(null);
@@ -254,7 +254,11 @@ export default function TrainingTacticsBoard({ activityId, players }: { activity
         setDrag(null);
         return;
       }
-      const coords = positionForPointer(fieldRect!, event.clientX, event.clientY);
+      if (!fieldRect) {
+        setDrag(null);
+        return;
+      }
+      const coords = positionForPointer(fieldRect, event.clientX, event.clientY);
       target.zone = "FIELD";
       target.x = coords.x;
       target.y = coords.y;
@@ -265,11 +269,15 @@ export default function TrainingTacticsBoard({ activityId, players }: { activity
         setDrag(null);
         return;
       }
-      const slot = event.clientX < benchRect!.left + benchRect!.width / 2 ? 1 : 2;
+      if (!benchRect) {
+        setDrag(null);
+        return;
+      }
+      const slot = event.clientX < benchRect.left + benchRect.width / 2 ? 1 : 2;
       const occupant = next.find((position) => position.zone === "BENCH" && position.benchSlot === slot && position.playerId !== dragged);
       if (occupant) {
-        if (source.zone === "FIELD") {
-          const coords = positionForPointer(fieldRect!, event.clientX, event.clientY);
+        if (source.zone === "FIELD" && fieldRect) {
+          const coords = positionForPointer(fieldRect, event.clientX, event.clientY);
           occupant.zone = "FIELD";
           occupant.x = coords.x;
           occupant.y = coords.y;
