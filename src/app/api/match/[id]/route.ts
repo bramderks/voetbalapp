@@ -49,11 +49,14 @@ export async function PATCH(
     }
 
     if (body.locked === true) {
+      const currentScoreFor = match.scoreFor;
+      const currentScoreAgainst = match.scoreAgainst;
+
       if (
-        !Number.isInteger(match.scoreFor) ||
-        match.scoreFor < 0 ||
-        !Number.isInteger(match.scoreAgainst) ||
-        match.scoreAgainst < 0
+        !Number.isInteger(currentScoreFor) ||
+        currentScoreFor < 0 ||
+        !Number.isInteger(currentScoreAgainst) ||
+        currentScoreAgainst < 0
       ) {
         return NextResponse.json(
           { error: "Vul eerst de volledige uitslag in voordat je de wedstrijd sluit." },
@@ -110,17 +113,11 @@ export async function PATCH(
       return NextResponse.json({ error: "De eindtijd moet na de begintijd liggen." }, { status: 400 });
     }
 
-    if (
-      scoreFor !== null &&
-      (!Number.isInteger(scoreFor) || scoreFor < 0)
-    ) {
+    if (scoreFor !== null && (!Number.isInteger(scoreFor) || scoreFor < 0)) {
       return NextResponse.json({ error: "De score van SCE moet een geheel getal van 0 of hoger zijn." }, { status: 400 });
     }
 
-    if (
-      scoreAgainst !== null &&
-      (!Number.isInteger(scoreAgainst) || scoreAgainst < 0)
-    ) {
+    if (scoreAgainst !== null && (!Number.isInteger(scoreAgainst) || scoreAgainst < 0)) {
       return NextResponse.json({ error: "De score van de tegenstander moet een geheel getal van 0 of hoger zijn." }, { status: 400 });
     }
 
