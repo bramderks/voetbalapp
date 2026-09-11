@@ -7,10 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================
-// TEAM
-// ============================================================
-
 model Team {
   id     Int     @id @default(autoincrement())
   name   String
@@ -19,10 +15,6 @@ model Team {
   players    Player[]
   activities Activity[]
 }
-
-// ============================================================
-// PLAYER
-// ============================================================
 
 model Player {
   id     Int    @id @default(autoincrement())
@@ -36,16 +28,6 @@ model Player {
   tactics    TacticPosition[]
 }
 
-// ============================================================
-// PLAYER STATS
-//
-// BESTAANDE TABEL - voorlopig behouden.
-//
-// Deze tabel wordt straks niet meer gebruikt als bron voor de
-// nieuwe statistieken. We verwijderen hem pas nadat de nieuwe
-// statistiekenstructuur volledig werkt.
-// ============================================================
-
 model PlayerStats {
   id       Int @id @default(autoincrement())
   playerId Int
@@ -58,18 +40,6 @@ model PlayerStats {
   @@index([playerId])
 }
 
-// ============================================================
-// ACTIVITY
-//
-// Centrale tabel voor:
-// TRAINING
-// MATCH
-//
-// date      = YYYY-MM-DD
-// startTime = HH:mm
-// endTime   = HH:mm
-// ============================================================
-
 model Activity {
   id   Int    @id @default(autoincrement())
   type String
@@ -79,8 +49,10 @@ model Activity {
   endTime   String
 
   // Wedstrijd
-  opponent String?
-  home     Boolean?
+  opponent     String?
+  home         Boolean?
+  scoreFor     Int?
+  scoreAgainst Int?
 
   // Vergrendeling
   locked   Boolean   @default(false)
@@ -102,14 +74,6 @@ model Activity {
   @@index([locked])
 }
 
-// ============================================================
-// TACTIC POSITION
-//
-// Persistente positie van een speler binnen de tactiek van een
-// training. x/y zijn percentages binnen het betreffende gebied.
-// zone = FIELD, BENCH of POOL.
-// ============================================================
-
 model TacticPosition {
   id         Int    @id @default(autoincrement())
   activityId Int
@@ -128,12 +92,6 @@ model TacticPosition {
   @@index([activityId, zone])
 }
 
-// ============================================================
-// ATTENDANCE
-//
-// Eén aanwezigheid per speler per activiteit.
-// ============================================================
-
 model Attendance {
   id         Int     @id @default(autoincrement())
   playerId   Int
@@ -147,12 +105,6 @@ model Attendance {
   @@index([activityId])
   @@index([playerId])
 }
-
-// ============================================================
-// MATCH STATISTICS
-//
-// Alleen voor wedstrijden.
-// ============================================================
 
 model MatchStat {
   id         Int @id @default(autoincrement())
