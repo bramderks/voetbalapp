@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TeamBadge from "@/components/TeamBadge";
 import TrainingLockControl from "@/components/TrainingLockControl";
 import TrainingTacticsBoard from "@/components/TrainingTacticsBoard";
@@ -62,6 +62,7 @@ export default function TrainingDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") === "tactiek" ? "tactiek" : "aanwezigheid";
   const activityId = Number(id);
@@ -69,6 +70,7 @@ export default function TrainingDetail({
   const [attendance, setAttendance] = useState<Record<number, boolean | undefined>>({});
   const [loading, setLoading] = useState(true);
   const [savingPlayerId, setSavingPlayerId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -136,6 +138,28 @@ export default function TrainingDetail({
       setError(err instanceof Error ? err.message : "Aanwezigheid kon niet worden opgeslagen.");
     } finally {
       setSavingPlayerId(null);
+    }
+  }
+
+  async function deleteTraining() {
+    if (!training || training.locked || deleting) return;
+
+    const confirmed = window.confirm(
+      `Weet je zeker dat je de training van ${formatDate(training.date)} (${training.startTime}–${training.endTime}) wilt verwijderen?\n\nDe aanwezigheidsregistratie en tactiek van deze training worden ook verwijderd. Dit kan niet ongedaan worden gemaakt.`
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/training/${training.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error ?? "Training kon niet worden verwijderd.");
+      router.push("/trainingen");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Training kon niet worden verwijderd.");
+      setDeleting(false);
     }
   }
 
@@ -258,7 +282,19 @@ export default function TrainingDetail({
             </>
           )}
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href="/trainingen" className="app-button app-button-secondary">← Alle trainingen</Link></div>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/trainingen" className="app-button app-button-secondary">← Alle trainingen</Link>
+            {!training.locked && (
+              <button
+                type="button"
+                onClick={deleteTraining}
+                disabled={deleting || savingPlayerId !== null}
+                className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? "Training verwijderen..." : "Training verwijderen"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </main>
