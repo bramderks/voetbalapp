@@ -1,8 +1,15 @@
-// src/app/wedstrijden/bewerken/page.tsx
-import EditMatchForm from './EditMatchForm';
+import EditMatchForm from "./EditMatchForm";
 
-export default function EditMatchPage({ searchParams }: { searchParams?: { id?: string } }) {
-  const activityId = Number(searchParams?.id ?? 0);
+type EditMatchPageProps = {
+  searchParams: Promise<{ id?: string }>;
+};
+
+export default async function EditMatchPage({ searchParams }: EditMatchPageProps) {
+  // In the current Next.js App Router, searchParams is asynchronous.
+  // Reading it synchronously made the ID undefined and sent 0 to the form,
+  // which triggered the "Ongeldig wedstrijd-ID" error when editing a match.
+  const params = await searchParams;
+  const activityId = Number(params.id ?? 0);
 
   return (
     <main className="mx-auto max-w-md p-4 pb-10">
