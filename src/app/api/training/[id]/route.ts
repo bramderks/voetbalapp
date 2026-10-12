@@ -84,3 +84,33 @@ export async function PATCH(
     return NextResponse.json({ error: "Trainingstatus kon niet worden gewijzigd." }, { status: 500 });
   }
 }
+
+/** Verwijder uitsluitend een bestaande, nog open training. */
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const activityId = getActivityId(await params);
+    if (!activityId) return NextResponse.json({ error: "Ongeldig training-ID." }, { status: 400 });
+
+    const training = await prisma.activity.findFirst({
+      where: { id: activityId, type: "TRAINING" },
+      select: { id: true, locked: true },
+    });
+
+    if (!training) return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
+    if (training.locked) {
+      return NextResponse.json(
+        { error: "Deze training is gesloten en kan niet worden verwijderd. Open de training eerst opnieuw." },
+        { status: 409 }
+      );
+    }
+
+    await prisma.activity.delete({ where: { id: training.id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/training/[id] error:", error);
+    return NextResponse.json({ error: "Training kon niet worden verwijderd." }, { status: 500 });
+  }
+}
