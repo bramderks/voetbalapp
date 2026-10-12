@@ -173,7 +173,7 @@ export default async function TrainingenPage() {
                       {training.locked ? (
                         <span
                           className="
-                            hidden
+                            inline-flex
                             rounded-full
                             bg-[#fef2f2]
                             px-3
@@ -183,7 +183,6 @@ export default async function TrainingenPage() {
                             uppercase
                             tracking-wide
                             text-[#dc2626]
-                            sm:inline-flex
                           "
                         >
                           Gesloten
@@ -191,7 +190,7 @@ export default async function TrainingenPage() {
                       ) : (
                         <span
                           className="
-                            hidden
+                            inline-flex
                             rounded-full
                             bg-[#e9f7ee]
                             px-3
@@ -201,7 +200,6 @@ export default async function TrainingenPage() {
                             uppercase
                             tracking-wide
                             text-[#16803c]
-                            sm:inline-flex
                           "
                         >
                           Open
