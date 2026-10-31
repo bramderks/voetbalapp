@@ -1,6 +1,7 @@
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import TeamBadge from "@/components/TeamBadge";
+import SwipeToDelete from "@/components/SwipeToDelete";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +54,8 @@ export default async function WedstrijdenPage() {
                 const hasScore = wedstrijd.scoreFor !== null && wedstrijd.scoreAgainst !== null;
 
                 return (
-                  <Link key={wedstrijd.id} href={`/wedstrijden/${wedstrijd.id}`} className="group block rounded-2xl border border-[#e1e7e2] bg-white p-5 shadow-[0_4px_14px_rgba(23,33,27,0.06)] transition hover:-translate-y-0.5 hover:border-[#16803c] hover:shadow-md">
+                  <SwipeToDelete key={wedstrijd.id} activityId={wedstrijd.id} activityType="MATCH" locked={wedstrijd.locked} label="Wedstrijd">
+                  <Link href={`/wedstrijden/${wedstrijd.id}`} className="group block rounded-2xl border border-[#e1e7e2] bg-white p-5 shadow-[0_4px_14px_rgba(23,33,27,0.06)] transition hover:-translate-y-0.5 hover:border-[#16803c] hover:shadow-md">
                     <div className="flex items-center gap-4">
                       <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl transition ${wedstrijd.locked ? "bg-red-50" : "bg-[#e9f7ee] group-hover:bg-[#16803c]"}`}>
                         {wedstrijd.locked ? "🔒" : "⚽"}
@@ -82,6 +84,7 @@ export default async function WedstrijdenPage() {
                       <span aria-hidden="true" className="shrink-0 text-xl font-bold text-[#aab6ad] transition group-hover:translate-x-1 group-hover:text-[#16803c]">→</span>
                     </div>
                   </Link>
+                  </SwipeToDelete>
                 );
               })}
             </div>
