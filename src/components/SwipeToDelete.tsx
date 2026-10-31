@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 type SwipeToDeleteProps = {
@@ -8,7 +8,7 @@ type SwipeToDeleteProps = {
   activityType: "TRAINING" | "MATCH";
   locked: boolean;
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export default function SwipeToDelete({
@@ -26,7 +26,7 @@ export default function SwipeToDelete({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (locked || deleting || (event.pointerType === "mouse" && event.button !== 0)) return;
     startX.current = event.clientX;
     startY.current = event.clientY;
