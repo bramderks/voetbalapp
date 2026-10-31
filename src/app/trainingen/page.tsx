@@ -1,6 +1,7 @@
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import TeamBadge from "@/components/TeamBadge";
+import SwipeToDelete from "@/components/SwipeToDelete";
 
 export const dynamic = "force-dynamic";
 
@@ -111,8 +112,8 @@ export default async function TrainingenPage() {
           ) : (
             <div className="grid gap-4">
               {trainingen.map((training) => (
+                <SwipeToDelete key={training.id} activityId={training.id} activityType="TRAINING" locked={training.locked} label="Training">
                 <Link
-                  key={training.id}
                   href={`/trainingen/${training.id}`}
                   className="
                     group
@@ -222,6 +223,7 @@ export default async function TrainingenPage() {
                     </div>
                   </div>
                 </Link>
+                </SwipeToDelete>
               ))}
             </div>
           )}
