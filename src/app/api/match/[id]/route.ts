@@ -134,3 +134,30 @@ export async function PATCH(
     return NextResponse.json({ error: "Wedstrijd kon niet worden opgeslagen." }, { status: 500 });
   }
 }
+
+
+/** Verwijder een wedstrijd inclusief gekoppelde registraties en statistieken. */
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params;
+    const activityId = Number(id);
+    if (!Number.isInteger(activityId) || activityId <= 0) {
+      return NextResponse.json({ error: "Ongeldig wedstrijd-ID." }, { status: 400 });
+    }
+
+    const match = await prisma.activity.findFirst({
+      where: { id: activityId, type: "MATCH" },
+      select: { id: true },
+    });
+    if (!match) return NextResponse.json({ error: "Wedstrijd niet gevonden." }, { status: 404 });
+
+    await prisma.activity.delete({ where: { id: match.id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/match/[id] error:", error);
+    return NextResponse.json({ error: "Wedstrijd kon niet worden verwijderd." }, { status: 500 });
+  }
+}
