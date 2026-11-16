@@ -18,8 +18,8 @@ export async function GET(
     if (!team) return NextResponse.json({ error: "Team niet gevonden." }, { status: 404 });
 
     const [lockedTrainings, lockedMatches, players] = await Promise.all([
-      prisma.activity.findMany({ where: { teamId, type: "TRAINING", locked: true }, select: { id: true } }),
-      prisma.activity.findMany({ where: { teamId, type: "MATCH", locked: true }, select: { id: true } }),
+      prisma.activity.findMany({ where: { teamId, type: "TRAINING", locked: true }, include: { attendance: { include: { player: { select: { id: true, name: true } } } } }, orderBy: [{ date: "asc" }, { startTime: "asc" }] }),
+      prisma.activity.findMany({ where: { teamId, type: "MATCH", locked: true }, include: { attendance: { include: { player: { select: { id: true, name: true } } } }, matchStats: { include: { player: { select: { id: true, name: true } } } } }, orderBy: [{ date: "asc" }, { startTime: "asc" }] }),
       prisma.player.findMany({ where: { teamId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
     ]);
 
@@ -75,6 +75,14 @@ export async function GET(
       lockedTrainingTotal: lockedTrainingIds.length,
       lockedMatchTotal: lockedMatchIds.length,
       players: stats,
+      activities: [...lockedTrainings, ...lockedMatches].map((activity) => ({
+        id: activity.id, type: activity.type, date: activity.date,
+        startTime: activity.startTime, endTime: activity.endTime,
+        opponent: activity.opponent, home: activity.home,
+        scoreFor: activity.scoreFor, scoreAgainst: activity.scoreAgainst,
+        attendance: activity.attendance.map((item) => ({ playerId: item.playerId, playerName: item.player.name, present: item.present })),
+        matchStats: "matchStats" in activity ? activity.matchStats.map((item) => ({ playerId: item.playerId, playerName: item.player.name, goals: item.goals, assists: item.assists })) : [],
+      })),
     });
   } catch (error) {
     console.error("Fout bij ophalen teamstatistieken:", error);
