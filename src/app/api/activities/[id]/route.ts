@@ -112,8 +112,11 @@ export async function DELETE(
     }
 
 
-    await prisma.activity.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      await tx.attendance.deleteMany({ where: { activityId: id } });
+      await tx.matchStat.deleteMany({ where: { activityId: id } });
+      await tx.tacticPosition.deleteMany({ where: { activityId: id } });
+      await tx.activity.delete({ where: { id } });
     });
 
     return NextResponse.json({
