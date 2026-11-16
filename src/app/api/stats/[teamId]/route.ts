@@ -24,7 +24,15 @@ export async function GET(
     ]);
 
     const lockedTrainingIds = lockedTrainings.map((training) => training.id);
-    const lockedMatchIds = lockedMatches.map((match) => match.id);\n    const activityDetails = await prisma.activity.findMany({\n      where: { teamId, locked: true },\n      include: {\n        attendance: { include: { player: { select: { id: true, name: true } } } },\n        matchStats: { include: { player: { select: { id: true, name: true } } } },\n      },\n      orderBy: [{ date: "asc" }, { startTime: "asc" }],\n    });
+    const lockedMatchIds = lockedMatches.map((match) => match.id);
+    const activityDetails = await prisma.activity.findMany({
+      where: { teamId, locked: true },
+      include: {
+        attendance: { include: { player: { select: { id: true, name: true } } } },
+        matchStats: { include: { player: { select: { id: true, name: true } } } },
+      },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+    });
 
     const [trainingAttendance, matchAttendance, matchStats] = await Promise.all([
       lockedTrainingIds.length === 0
