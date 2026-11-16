@@ -1,397 +1,67 @@
-import Link from "next/link";
-import prisma from "@/lib/prisma";
+"use client";
 
-function formatDate(dateString: string) {
-  const [year, month, day] = dateString
-    .slice(0, 10)
-    .split("-")
-    .map(Number);
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-  const date = new Date(year, month - 1, day);
+type Team = { id: number; name: string; season: string | null };
 
-  return date.toLocaleDateString("nl-NL", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-}
+export default function TeamSelectPage() {
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-type MenuItemProps = {
-  href: string;
-  label: string;
-  icon: string;
-};
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/teams", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result?.error ?? "Teams konden niet worden geladen.");
+        if (!cancelled) setTeams(Array.isArray(result) ? result : []);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Er ging iets mis.");
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
-function MenuItem({ href, label, icon }: MenuItemProps) {
-  return (
-    <Link
-      href={href}
-      className="
-        group
-        flex
-        min-h-[150px]
-        flex-col
-        items-center
-        justify-center
-        gap-4
-        rounded-2xl
-        border
-        border-[#e1e7e2]
-        bg-white
-        p-5
-        text-center
-        shadow-sm
-        transition
-        duration-150
-        hover:-translate-y-0.5
-        hover:border-[#16803c]
-        hover:shadow-md
-        active:translate-y-0
-      "
-    >
-      <span
-        aria-hidden="true"
-        className="
-          flex
-          h-14
-          w-14
-          items-center
-          justify-center
-          rounded-2xl
-          bg-[#e9f7ee]
-          text-3xl
-          transition
-          group-hover:bg-[#16803c]
-          group-hover:scale-105
-        "
-      >
-        {icon}
-      </span>
-
-      <span className="text-base font-bold text-[#17211b]">
-        {label}
-      </span>
-    </Link>
-  );
-}
-
-export default async function HomePage() {
-  const team = await prisma.team.findFirst({
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  const vandaag = new Date();
-
-  const vandaagString = [
-    vandaag.getFullYear(),
-    String(vandaag.getMonth() + 1).padStart(2, "0"),
-    String(vandaag.getDate()).padStart(2, "0"),
-  ].join("-");
-
-  const volgendeTraining = await prisma.activity.findFirst({
-    where: {
-      type: "TRAINING",
-      teamId: team?.id,
-      locked: false,
-      date: {
-        gte: vandaagString,
-      },
-    },
-    orderBy: [
-      {
-        date: "asc",
-      },
-      {
-        startTime: "asc",
-      },
-    ],
-  });
-
-  const volgendeWedstrijd = await prisma.activity.findFirst({
-    where: {
-      type: "MATCH",
-      teamId: team?.id,
-      date: {
-        gte: vandaagString,
-      },
-    },
-    orderBy: [
-      {
-        date: "asc",
-      },
-      {
-        startTime: "asc",
-      },
-    ],
-  });
-
-  const tactiekTraining = await prisma.activity.findFirst({
-    where: {
-      type: "TRAINING",
-      teamId: team?.id,
-      date: {
-        gte: vandaagString,
-      },
-    },
-    orderBy: [
-      {
-        date: "asc",
-      },
-      {
-        startTime: "asc",
-      },
-    ],
-  });
-
-  const tactiekHref = tactiekTraining
-    ? `/trainingen/${tactiekTraining.id}?tab=tactiek`
-    : "/trainingen";
+  function chooseTeam(team: Team) {
+    window.localStorage.setItem("voetbalapp-team-id", String(team.id));
+    window.localStorage.setItem("voetbalapp-team-name", team.name);
+    router.push(`/team/${team.id}/statistieken`);
+  }
 
   return (
     <main className="app-page">
       <div className="app-container">
-
-        {/* ==================================================
-            WELKOM
-            ================================================== */}
-
-        <section className="mb-8">
-          <p className="mb-1 text-sm font-semibold text-[#16803c]">
-            Welkom bij de Voetbalapp
-          </p>
-
-          <h1 className="text-3xl font-bold tracking-tight text-[#17211b] sm:text-4xl">
-            {team?.name ?? "Mijn team"}
-          </h1>
-
-          {team?.season && (
-            <p className="mt-1 text-sm text-[#647067]">
-              Seizoen {team.season}
-            </p>
-          )}
-        </section>
-
-        {/* ==================================================
-            VOLGENDE ACTIVITEITEN
-            ================================================== */}
-
-        <section className="mb-10">
-          <div className="mb-4">
-            <h2 className="text-lg font-bold text-[#17211b]">
-              Eerstvolgende
-            </h2>
-
-            <p className="mt-1 text-sm text-[#647067]">
-              De eerstvolgende open training en open wedstrijd.
-            </p>
+        <section className="mx-auto max-w-xl py-10 sm:py-16">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#e9f7ee] text-4xl">⚽</div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#16803c]">Welkom bij de</p>
+            <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-[#17211b]">Voetbalapp</h1>
+            <p className="mt-3 text-base text-[#647067]">Kies het team waarmee je verder wilt.</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          {loading && <div className="rounded-2xl border border-[#e1e7e2] bg-white p-6 text-center text-sm text-[#647067]">Teams laden...</div>}
+          {error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+          {!loading && !error && teams.length === 0 && <div className="rounded-2xl border border-[#e1e7e2] bg-white p-6 text-center text-sm text-[#647067]">Er zijn nog geen teams aangemaakt.</div>}
 
-            {/* TRAINING */}
-
-            <Link
-              href={
-                volgendeTraining
-                  ? `/trainingen/${volgendeTraining.id}`
-                  : "/trainingen"
-              }
-              className="
-                group
-                rounded-2xl
-                border
-                border-[#e1e7e2]
-                bg-white
-                p-5
-                shadow-sm
-                transition
-                hover:-translate-y-0.5
-                hover:border-[#16803c]
-                hover:shadow-md
-              "
-            >
-              <div className="mb-4 flex items-center gap-3">
-                <span
-                  className="
-                    flex
-                    h-11
-                    w-11
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-[#e9f7ee]
-                    text-2xl
-                  "
-                  aria-hidden="true"
-                >
-                  ⚽
+          <div className="grid gap-3">
+            {teams.map((team) => (
+              <button key={team.id} type="button" onClick={() => chooseTeam(team)}
+                className="group flex w-full items-center gap-4 rounded-2xl border border-[#e1e7e2] bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#16803c] hover:shadow-md">
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#e9f7ee] text-2xl">🛡️</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-lg font-bold text-[#17211b]">{team.name}</span>
+                  <span className="mt-1 block text-sm text-[#647067]">{team.season ? `Seizoen ${team.season}` : "Teamomgeving"}</span>
                 </span>
-
-                <div>
-                  <p className="text-sm font-semibold text-[#16803c]">
-                    Volgende open training
-                  </p>
-                </div>
-              </div>
-
-              {volgendeTraining ? (
-                <>
-                  <p className="font-bold capitalize text-[#17211b]">
-                    {formatDate(volgendeTraining.date)}
-                  </p>
-
-                  <p className="mt-1 text-sm text-[#647067]">
-                    {volgendeTraining.startTime} –{" "}
-                    {volgendeTraining.endTime}
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm text-[#647067]">
-                  Geen open training gepland.
-                </p>
-              )}
-            </Link>
-
-            {/* WEDSTRIJD */}
-
-            <Link
-              href={
-                volgendeWedstrijd
-                  ? `/wedstrijden/${volgendeWedstrijd.id}`
-                  : "/wedstrijden"
-              }
-              className="
-                group
-                rounded-2xl
-                border
-                border-[#e1e7e2]
-                bg-white
-                p-5
-                shadow-sm
-                transition
-                hover:-translate-y-0.5
-                hover:border-[#16803c]
-                hover:shadow-md
-              "
-            >
-              <div className="mb-4 flex items-center gap-3">
-                <span
-                  className="
-                    flex
-                    h-11
-                    w-11
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-[#e9f7ee]
-                    text-2xl
-                  "
-                  aria-hidden="true"
-                >
-                  🏆
-                </span>
-
-                <div>
-                  <p className="text-sm font-semibold text-[#16803c]">
-                    Volgende open wedstrijd
-                  </p>
-                </div>
-              </div>
-
-              {volgendeWedstrijd ? (
-                <>
-                  <p className="font-bold capitalize text-[#17211b]">
-                    {formatDate(volgendeWedstrijd.date)}
-                  </p>
-
-                  <p className="mt-1 text-sm text-[#647067]">
-                    {volgendeWedstrijd.startTime} –{" "}
-                    {volgendeWedstrijd.endTime}
-                  </p>
-
-                  {volgendeWedstrijd.opponent && (
-                    <p className="mt-2 text-sm text-[#647067]">
-                      Tegen{" "}
-                      <span className="font-semibold text-[#17211b]">
-                        {volgendeWedstrijd.opponent}
-                      </span>
-                    </p>
-                  )}
-
-                  {volgendeWedstrijd.home !== null && (
-                    <p className="mt-1 text-sm font-medium text-[#647067]">
-                      {volgendeWedstrijd.home ? "Thuis" : "Uit"}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-[#647067]">
-                  Geen open wedstrijd gepland.
-                </p>
-              )}
-            </Link>
-
+                <span aria-hidden="true" className="text-2xl font-semibold text-[#16803c] transition group-hover:translate-x-1">›</span>
+              </button>
+            ))}
           </div>
+          <p className="mt-6 text-center text-xs text-[#879188]">Geen account nodig · Selecteer je team om te beginnen</p>
         </section>
-
-        {/* ==================================================
-            HOOFDMENU
-            ================================================== */}
-
-        <section>
-          <div className="mb-4">
-            <h2 className="text-lg font-bold text-[#17211b]">
-              Teambeheer
-            </h2>
-
-            <p className="mt-1 text-sm text-[#647067]">
-              Kies wat je wilt bekijken.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-
-            <MenuItem
-              href={team ? `/team/${team.id}` : "/team"}
-              label="Team"
-              icon="🛡️"
-            />
-
-            <MenuItem
-              href="/trainingen"
-              label="Trainingen"
-              icon="⚽"
-            />
-
-            <MenuItem
-              href="/wedstrijden"
-              label="Wedstrijden"
-              icon="🏆"
-            />
-
-            <MenuItem
-              href="/spelers"
-              label="Spelers"
-              icon="👥"
-            />
-
-            <MenuItem
-              href="/statistieken"
-              label="Statistieken"
-              icon="📊"
-            />
-
-            <MenuItem
-              href={tactiekHref}
-              label="Taktiek"
-              icon="📋"
-            />
-
-          </div>
-        </section>
-
       </div>
     </main>
   );
