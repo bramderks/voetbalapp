@@ -154,7 +154,12 @@ export async function DELETE(
     });
     if (!match) return NextResponse.json({ error: "Wedstrijd niet gevonden." }, { status: 404 });
 
-    await prisma.$transaction(async (tx) => {\n      await tx.attendance.deleteMany({ where: { activityId: match.id } });\n      await tx.matchStat.deleteMany({ where: { activityId: match.id } });\n      await tx.tacticPosition.deleteMany({ where: { activityId: match.id } });\n      await tx.activity.delete({ where: { id: match.id } });\n    });
+    await prisma.$transaction(async (tx) => {
+      await tx.attendance.deleteMany({ where: { activityId: match.id } });
+      await tx.matchStat.deleteMany({ where: { activityId: match.id } });
+      await tx.tacticPosition.deleteMany({ where: { activityId: match.id } });
+      await tx.activity.delete({ where: { id: match.id } });
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/match/[id] error:", error);
