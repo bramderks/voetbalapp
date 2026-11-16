@@ -82,8 +82,8 @@ export async function GET(
 /**
  * DELETE
  *
- * Een activiteit mag alleen worden verwijderd zolang deze
- * nog niet is vergrendeld.
+ * Verwijdert een activiteit inclusief gekoppelde aanwezigheid,
+ * wedstrijdstatistieken en tactiek (cascade via de relaties).
  */
 export async function DELETE(
   _req: Request,
@@ -111,15 +111,6 @@ export async function DELETE(
       );
     }
 
-    if (activity.locked) {
-      return NextResponse.json(
-        {
-          error:
-            "Deze activiteit is gesloten en kan niet meer worden verwijderd.",
-        },
-        { status: 409 }
-      );
-    }
 
     await prisma.activity.delete({
       where: { id },
