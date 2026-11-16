@@ -85,7 +85,7 @@ export async function PATCH(
   }
 }
 
-/** Verwijder uitsluitend een bestaande, nog open training. */
+/** Verwijder een training inclusief gekoppelde registraties en tactiek. */
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -96,17 +96,10 @@ export async function DELETE(
 
     const training = await prisma.activity.findFirst({
       where: { id: activityId, type: "TRAINING" },
-      select: { id: true, locked: true },
+      select: { id: true },
     });
 
     if (!training) return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
-    if (training.locked) {
-      return NextResponse.json(
-        { error: "Deze training is gesloten en kan niet worden verwijderd. Open de training eerst opnieuw." },
-        { status: 409 }
-      );
-    }
-
     await prisma.activity.delete({ where: { id: training.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
