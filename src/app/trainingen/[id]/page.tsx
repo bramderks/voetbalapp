@@ -284,16 +284,14 @@ export default function TrainingDetail({
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/trainingen" className="app-button app-button-secondary">← Alle trainingen</Link>
-            {!training.locked && (
-              <button
-                type="button"
-                onClick={deleteTraining}
-                disabled={deleting || savingPlayerId !== null}
-                className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {deleting ? "Training verwijderen..." : "Training verwijderen"}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={deleteTraining}
+              disabled={deleting || savingPlayerId !== null}
+              className="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {deleting ? "Training verwijderen..." : "Training verwijderen"}
+            </button>
           </div>
         </div>
       </div>
