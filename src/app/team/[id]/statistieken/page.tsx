@@ -94,13 +94,17 @@ export default function StatistiekenPage({ params }: { params: Promise<{ id: str
                       const attendanceLabel = attendance ? attendance.present ? "Aanwezig" : "Afwezig" : "Niet geregistreerd";
                       const statOnly = section.key === "goals" || section.key === "assists";
                       const statValue = section.key === "goals" ? stat?.goals ?? 0 : stat?.assists ?? 0;
-                      return <li key={activity.id} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--app-background)] p-3">
-                        <div className="min-w-0">
-                          <p className="font-semibold capitalize text-[var(--app-text)]">{dateLabel(activity.date)}</p>
-                          <p className="text-xs text-[var(--app-text-muted)]">{activity.type === "TRAINING" ? "Training" : `Wedstrijd ${activity.opponent ? `tegen ${activity.opponent}` : ""}`} · {activity.startTime}</p>
-                          {activity.type === "MATCH" && activity.scoreFor !== null && activity.scoreAgainst !== null && <p className="text-xs text-[var(--app-text-muted)]">Uitslag {activity.scoreFor}–{activity.scoreAgainst}</p>}
-                        </div>
-                        <span className={`shrink-0 rounded-lg px-3 py-2 text-sm font-bold ${statOnly ? "bg-white text-[var(--app-green)]" : attendance?.present ? "bg-green-100 text-green-800" : attendance ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"}`}>{statOnly ? statValue : attendanceLabel}</span>
+                      return <li key={activity.id}>
+                        <Link href={activity.type === "TRAINING" ? `/trainingen/${activity.id}` : `/wedstrijden/${activity.id}`}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-[var(--app-background)] p-3 transition hover:bg-[var(--app-green-light)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--app-green)]">
+                          <div className="min-w-0">
+                            <p className="font-semibold capitalize text-[var(--app-text)]">{dateLabel(activity.date)}</p>
+                            <p className="text-xs text-[var(--app-text-muted)]">{activity.type === "TRAINING" ? "Training" : `Wedstrijd ${activity.opponent ? `tegen ${activity.opponent}` : ""}`} · {activity.startTime}</p>
+                            {activity.type === "MATCH" && activity.scoreFor !== null && activity.scoreAgainst !== null && <p className="text-xs text-[var(--app-text-muted)]">Uitslag {activity.scoreFor}–{activity.scoreAgainst}</p>}
+                            <span className="mt-2 block text-xs font-semibold text-[var(--app-green)]">Open {activity.type === "TRAINING" ? "training" : "wedstrijd"} →</span>
+                          </div>
+                          <span className={`shrink-0 rounded-lg px-3 py-2 text-sm font-bold ${statOnly ? "bg-white text-[var(--app-green)]" : attendance?.present ? "bg-green-100 text-green-800" : attendance ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"}`}>{statOnly ? statValue : attendanceLabel}</span>
+                        </Link>
                       </li>;
                     })}
                   </ul>}
