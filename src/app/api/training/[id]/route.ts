@@ -100,7 +100,7 @@ export async function DELETE(
     });
 
     if (!training) return NextResponse.json({ error: "Training niet gevonden." }, { status: 404 });
-    await prisma.activity.delete({ where: { id: training.id } });
+    await prisma.$transaction(async (tx) => {\n      await tx.attendance.deleteMany({ where: { activityId: training.id } });\n      await tx.matchStat.deleteMany({ where: { activityId: training.id } });\n      await tx.tacticPosition.deleteMany({ where: { activityId: training.id } });\n      await tx.activity.delete({ where: { id: training.id } });\n    });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/training/[id] error:", error);
