@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import TeamBadge from "@/components/TeamBadge";
 import MatchLockControl from "@/components/MatchLockControl";
 import MatchScore from "@/components/MatchScore";
+import DeleteActivityButton from "@/components/DeleteActivityButton";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +91,12 @@ export default async function WedstrijdDetailPage({ params }: PageProps) {
         </section>
 
         <MatchLockControl activityId={wedstrijd.id} locked={wedstrijd.locked} />
+
+        <section className="app-card mt-6 p-6">
+          <h2 className="text-lg font-bold text-[#17211b]">Wedstrijd verwijderen</h2>
+          <p className="mt-1 text-sm text-[#647067]">Ook een gesloten wedstrijd kan worden verwijderd. De gekoppelde aanwezigheid en statistieken worden dan definitief verwijderd.</p>
+          <div className="mt-4"><DeleteActivityButton activityId={wedstrijd.id} activityType="MATCH" /></div>
+        </section>
 
         <section className="app-card mt-6 p-6">
           <h2 className="text-lg font-bold text-[#17211b]">Wedstrijd beheren</h2>
