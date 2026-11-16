@@ -18,13 +18,13 @@ export async function GET(
     if (!team) return NextResponse.json({ error: "Team niet gevonden." }, { status: 404 });
 
     const [lockedTrainings, lockedMatches, players] = await Promise.all([
-      prisma.activity.findMany({ where: { teamId, type: "TRAINING", locked: true }, include: { attendance: { include: { player: { select: { id: true, name: true } } } } }, orderBy: [{ date: "asc" }, { startTime: "asc" }] }),
-      prisma.activity.findMany({ where: { teamId, type: "MATCH", locked: true }, include: { attendance: { include: { player: { select: { id: true, name: true } } } }, matchStats: { include: { player: { select: { id: true, name: true } } } } }, orderBy: [{ date: "asc" }, { startTime: "asc" }] }),
+      prisma.activity.findMany({ where: { teamId, type: "TRAINING", locked: true }, select: { id: true } }),
+      prisma.activity.findMany({ where: { teamId, type: "MATCH", locked: true }, select: { id: true } }),
       prisma.player.findMany({ where: { teamId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
     ]);
 
     const lockedTrainingIds = lockedTrainings.map((training) => training.id);
-    const lockedMatchIds = lockedMatches.map((match) => match.id);
+    const lockedMatchIds = lockedMatches.map((match) => match.id);\n    const activityDetails = await prisma.activity.findMany({\n      where: { teamId, locked: true },\n      include: {\n        attendance: { include: { player: { select: { id: true, name: true } } } },\n        matchStats: { include: { player: { select: { id: true, name: true } } } },\n      },\n      orderBy: [{ date: "asc" }, { startTime: "asc" }],\n    });
 
     const [trainingAttendance, matchAttendance, matchStats] = await Promise.all([
       lockedTrainingIds.length === 0
@@ -75,13 +75,13 @@ export async function GET(
       lockedTrainingTotal: lockedTrainingIds.length,
       lockedMatchTotal: lockedMatchIds.length,
       players: stats,
-      activities: [...lockedTrainings, ...lockedMatches].map((activity) => ({
+      activities: activityDetails.map((activity) => ({
         id: activity.id, type: activity.type, date: activity.date,
         startTime: activity.startTime, endTime: activity.endTime,
         opponent: activity.opponent, home: activity.home,
         scoreFor: activity.scoreFor, scoreAgainst: activity.scoreAgainst,
         attendance: activity.attendance.map((item) => ({ playerId: item.playerId, playerName: item.player.name, present: item.present })),
-        matchStats: "matchStats" in activity ? activity.matchStats.map((item) => ({ playerId: item.playerId, playerName: item.player.name, goals: item.goals, assists: item.assists })) : [],
+        matchStats: activity.matchStats.map((item) => ({ playerId: item.playerId, playerName: item.player.name, goals: item.goals, assists: item.assists })),
       })),
     });
   } catch (error) {
