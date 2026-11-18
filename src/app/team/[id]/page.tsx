@@ -67,8 +67,8 @@ export default function TeamDashboardPage({ params }: { params: Promise<{ id: st
   }, [activities]);
 
   const links = [
-    { title: "Trainingen", description: "Planning en aanwezigheid", href: `/team/${teamId}/trainingen`, icon: "⚽" },
-    { title: "Wedstrijden", description: "Wedstrijden en registratie", href: `/team/${teamId}/wedstrijden`, icon: "🏆" },
+    { title: "Trainingen", description: "Planning en aanwezigheid", href: `/trainingen?teamId=${teamId}`, icon: "⚽" },
+    { title: "Wedstrijden", description: "Wedstrijden en registratie", href: `/wedstrijden?teamId=${teamId}`, icon: "🏆" },
     { title: "Spelers", description: "Beheer je team en spelers", href: `/team/${teamId}/spelers`, icon: "👥" },
     { title: "Statistieken", description: "Opkomst, doelpunten en assists", href: `/team/${teamId}/statistieken`, icon: "📊" },
   ];
