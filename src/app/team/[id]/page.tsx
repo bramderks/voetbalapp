@@ -1,237 +1,128 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import TeamBadge from "@/components/TeamBadge";
 
-type PlayerStats = {
-  playerId: number;
-  name: string;
-  trainingTotal: number;
-  trainingPresent: number;
-  matchTotal: number;
-  matchPresent: number;
-  goals: number;
-  assists: number;
-};
+type Team = { id: number; name: string; season: string | null };
+type Activity = { id: number; date: string; startTime: string; endTime: string; type: "TRAINING" | "MATCH"; opponent?: string | null };
 
-export default function StatistiekenPage() {
-  const [stats, setStats] = useState<PlayerStats[]>([]);
+function localDate(value: string) {
+  const [year, month, day] = value.slice(0, 10).split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+function dateLabel(value: string) {
+  return localDate(value).toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+
+export default function TeamDashboardPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const teamId = Number(id);
+  const [team, setTeam] = useState<Team | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
       try {
-        setLoading(true);
-        setError("");
-
-        const res = await fetch("/api/stats");
-
-        if (!res.ok) {
-          throw new Error("Statistieken konden niet worden geladen.");
+        if (!Number.isInteger(teamId) || teamId <= 0) throw new Error("Ongeldig team.");
+        const responses = await Promise.all([
+          fetch("/api/teams", { cache: "no-store" }),
+          fetch(`/api/training?teamId=${teamId}`, { cache: "no-store" }),
+          fetch(`/api/match?teamId=${teamId}`, { cache: "no-store" }),
+        ]);
+        const values = await Promise.all(responses.map((response) => response.json()));
+        const [teams, trainings, matches] = values;
+        if (!responses[0].ok) throw new Error(teams?.error ?? "Teams konden niet worden geladen.");
+        if (!responses[1].ok) throw new Error(trainings?.error ?? "Trainingen konden niet worden geladen.");
+        if (!responses[2].ok) throw new Error(matches?.error ?? "Wedstrijden konden niet worden geladen.");
+        const selectedTeam = (Array.isArray(teams) ? teams : []).find((item: Team) => item.id === teamId);
+        if (!selectedTeam) throw new Error("Dit team kon niet worden gevonden.");
+        const all: Activity[] = [
+          ...(Array.isArray(trainings) ? trainings : []).map((item: Omit<Activity, "type">) => ({ ...item, type: "TRAINING" as const })),
+          ...(Array.isArray(matches) ? matches : []).map((item: Omit<Activity, "type">) => ({ ...item, type: "MATCH" as const })),
+        ];
+        if (!cancelled) {
+          setTeam(selectedTeam);
+          setActivities(all.sort((a, b) => localDate(a.date).getTime() - localDate(b.date).getTime() || a.startTime.localeCompare(b.startTime)));
         }
-
-        const data = await res.json();
-        setStats(Array.isArray(data) ? data : []);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Statistieken konden niet worden geladen."
-        );
+        if (!cancelled) setError(err instanceof Error ? err.message : "Teamoverzicht kon niet worden geladen.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
+    void load();
+    return () => { cancelled = true; };
+  }, [teamId]);
 
-    load();
-  }, []);
+  const { upcoming, recent } = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return {
+      upcoming: activities.filter((a) => localDate(a.date) >= today).slice(0, 5),
+      recent: activities.filter((a) => localDate(a.date) < today).slice(-3).reverse(),
+    };
+  }, [activities]);
 
-  function percentage(present: number, total: number) {
-    if (total === 0) {
-      return 0;
-    }
+  const links = [
+    { title: "Trainingen", description: "Planning en aanwezigheid", href: `/team/${teamId}/trainingen`, icon: "⚽" },
+    { title: "Wedstrijden", description: "Wedstrijden en registratie", href: `/team/${teamId}/wedstrijden`, icon: "🏆" },
+    { title: "Spelers", description: "Beheer je team en spelers", href: `/team/${teamId}/spelers`, icon: "👥" },
+    { title: "Statistieken", description: "Opkomst, doelpunten en assists", href: `/team/${teamId}/statistieken`, icon: "📊" },
+  ];
 
-    return Math.round((present / total) * 100);
+  function activityHref(activity: Activity) {
+    return activity.type === "TRAINING" ? `/trainingen/${activity.id}` : `/wedstrijden/${activity.id}`;
+  }
+  function activityTitle(activity: Activity) {
+    return activity.type === "TRAINING" ? "Training" : `Wedstrijd ${activity.opponent ? `tegen ${activity.opponent}` : ""}`;
   }
 
   return (
     <main className="app-page">
       <div className="app-container">
-
-        {/* ==================================================
-            HEADER
-            ================================================== */}
         <header className="flex items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="transition hover:opacity-80"
-            aria-label="Naar Home"
-          >
-            <TeamBadge />
-          </Link>
-
-          <Link
-            href="/"
-            className="app-button app-button-primary"
-          >
-            <span aria-hidden="true" className="mr-2 text-base">
-              ⌂
-            </span>
-            Home
-          </Link>
+          <Link href="/" aria-label="Team kiezen" className="transition hover:opacity-80"><TeamBadge /></Link>
+          <Link href="/" className="app-button app-button-secondary">Ander team kiezen</Link>
         </header>
-
-        {/* ==================================================
-            TITEL
-            ================================================== */}
         <section className="mt-8">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[var(--app-green)]">
-            Teamoverzicht
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-[var(--app-green)]">Teamdashboard</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--app-text)]">{team?.name ?? "Teamoverzicht"}</h1>
+          {team?.season && <p className="mt-1 text-sm text-[var(--app-text-muted)]">Seizoen {team.season}</p>}
+          <p className="mt-3 text-sm text-[var(--app-text-muted)]">Kies een onderdeel of bekijk de eerstvolgende activiteit.</p>
+        </section>
+        {error && <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--app-text)]">
-            Statistieken
-          </h1>
-
-          <p className="mt-2 text-sm text-[var(--app-text-muted)]">
-            Bekijk de aanwezigheid en wedstrijdstatistieken per speler.
-          </p>
+        <section className="mt-8">
+          <h2 className="mb-4 text-xl font-bold text-[var(--app-text)]">Teamonderdelen</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {links.map((item) => <Link key={item.title} href={item.href} className="app-card flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--app-green-light)] text-2xl">{item.icon}</span>
+              <span className="min-w-0 flex-1"><span className="block font-bold text-[var(--app-text)]">{item.title}</span><span className="mt-1 block text-sm text-[var(--app-text-muted)]">{item.description}</span></span>
+              <span className="text-2xl text-[var(--app-green)]">›</span>
+            </Link>)}
+          </div>
         </section>
 
-        {/* ==================================================
-            INHOUD
-            ================================================== */}
         <section className="mt-8">
-          {loading ? (
-            <div className="app-card p-6">
-              <p className="text-sm text-[var(--app-text-muted)]">
-                Statistieken laden...
-              </p>
-            </div>
-          ) : error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-              <p className="text-sm font-medium text-red-600">
-                {error}
-              </p>
-            </div>
-          ) : stats.length === 0 ? (
-            <div className="app-card p-6">
-              <p className="text-sm text-[var(--app-text-muted)]">
-                Er zijn nog geen statistieken beschikbaar.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {stats.map((s) => {
-                const trainingPercentage = percentage(
-                  s.trainingPresent,
-                  s.trainingTotal
-                );
-
-                const matchPercentage = percentage(
-                  s.matchPresent,
-                  s.matchTotal
-                );
-
-                return (
-                  <div
-                    key={s.playerId}
-                    className="
-                      app-card
-                      p-5
-                      transition
-                      hover:-translate-y-0.5
-                      hover:shadow-md
-                    "
-                  >
-                    {/* SPELER */}
-                    <div className="mb-5 flex items-center justify-between gap-4">
-                      <h2 className="text-xl font-bold text-[var(--app-text)]">
-                        {s.name}
-                      </h2>
-
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--app-green-light)] text-lg">
-                        📊
-                      </div>
-                    </div>
-
-                    {/* AANWEZIGHEID */}
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-xl bg-[var(--app-background)] p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-muted)]">
-                          Training opkomst
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold text-[var(--app-green)]">
-                          {trainingPercentage}%
-                        </p>
-
-                        <p className="mt-1 text-xs text-[var(--app-text-muted)]">
-                          {s.trainingPresent} van {s.trainingTotal} trainingen
-                        </p>
-                      </div>
-
-                      <div className="rounded-xl bg-[var(--app-background)] p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-muted)]">
-                          Wedstrijd opkomst
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold text-[var(--app-green)]">
-                          {matchPercentage}%
-                        </p>
-
-                        <p className="mt-1 text-xs text-[var(--app-text-muted)]">
-                          {s.matchPresent} van {s.matchTotal} wedstrijden
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* WEDSTRIJDSTATISTIEKEN */}
-                    <div className="mt-3 grid grid-cols-2 gap-3">
-                      <div className="rounded-xl border border-[var(--app-border)] bg-white p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-muted)]">
-                          Goals
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold text-[var(--app-text)]">
-                          {s.goals}
-                        </p>
-                      </div>
-
-                      <div className="rounded-xl border border-[var(--app-border)] bg-white p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--app-text-muted)]">
-                          Assists
-                        </p>
-
-                        <p className="mt-1 text-2xl font-bold text-[var(--app-text)]">
-                          {s.assists}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <h2 className="mb-4 text-xl font-bold text-[var(--app-text)]">Aankomende activiteiten</h2>
+          {loading ? <div className="app-card p-5 text-sm text-[var(--app-text-muted)]">Activiteiten laden...</div> :
+            upcoming.length === 0 ? <div className="app-card p-5 text-sm text-[var(--app-text-muted)]">Er staan momenteel geen trainingen of wedstrijden gepland.</div> :
+            <div className="grid gap-3">{upcoming.map((activity) => <Link key={`${activity.type}-${activity.id}`} href={activityHref(activity)} className="app-card flex items-center gap-4 p-4 transition hover:shadow-md">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--app-green-light)] text-xl">{activity.type === "TRAINING" ? "⚽" : "🏆"}</span>
+              <span className="min-w-0 flex-1"><span className="block font-semibold capitalize text-[var(--app-text)]">{dateLabel(activity.date)}</span><span className="mt-1 block text-sm text-[var(--app-text-muted)]">{activityTitle(activity)} · {activity.startTime}–{activity.endTime}</span></span>
+              <span className="text-xl text-[var(--app-green)]">›</span>
+            </Link>)}</div>}
         </section>
 
-        {/* ==================================================
-            ONDERSTE NAVIGATIE
-            ================================================== */}
-        <div className="mt-8">
-          <Link
-            href="/"
-            className="app-button app-button-secondary w-full"
-          >
-            <span aria-hidden="true" className="mr-2">
-              ⌂
-            </span>
-            Terug naar Home
-          </Link>
-        </div>
-
+        {!loading && recent.length > 0 && <section className="mt-8">
+          <h2 className="mb-4 text-xl font-bold text-[var(--app-text)]">Recent geweest</h2>
+          <div className="grid gap-2">{recent.map((activity) => <Link key={`${activity.type}-${activity.id}`} href={activityHref(activity)} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--app-border)] bg-white p-4 transition hover:border-[var(--app-green)]">
+            <span><span className="block font-medium capitalize text-[var(--app-text)]">{dateLabel(activity.date)}</span><span className="text-xs text-[var(--app-text-muted)]">{activityTitle(activity)}</span></span><span className="text-sm text-[var(--app-green)]">Bekijken →</span>
+          </Link>)}</div>
+        </section>}
       </div>
     </main>
   );
