@@ -3,11 +3,12 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import TeamBadge from "@/components/TeamBadge";
 
-export default async function NieuweTrainingPage() {
+export default async function NieuweTrainingPage({ searchParams }: { searchParams: Promise<{ teamId?: string }> }) {
+  const params = await searchParams;
+  const requestedTeamId = params.teamId ? Number(params.teamId) : undefined;
   const team = await prisma.team.findFirst({
-    orderBy: {
-      id: "asc",
-    },
+    where: Number.isInteger(requestedTeamId) && requestedTeamId! > 0 ? { id: requestedTeamId } : undefined,
+    orderBy: { id: "asc" },
   });
 
   if (!team) {
@@ -79,7 +80,7 @@ export default async function NieuweTrainingPage() {
       },
     });
 
-    redirect("/trainingen");
+    redirect(`/trainingen?teamId=${teamId}`);
   }
 
   return (
@@ -200,7 +201,7 @@ export default async function NieuweTrainingPage() {
               {/* ACTIES */}
               <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
                 <Link
-                  href="/trainingen"
+                  href={`/trainingen?teamId=${teamId}`}
                   className="app-button app-button-secondary"
                 >
                   Annuleren
