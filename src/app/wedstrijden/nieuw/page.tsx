@@ -1,12 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import TeamBadge from "@/components/TeamBadge";
 
 export default function NieuweWedstrijdPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const teamId = Number(searchParams.get("teamId"));
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -35,7 +37,7 @@ export default function NieuweWedstrijdPage() {
       const response = await fetch("/api/match/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, startTime, endTime, opponent: opponent.trim(), home: home === "HOME" }),
+        body: JSON.stringify({ date, startTime, endTime, opponent: opponent.trim(), home: home === "HOME", ...(Number.isInteger(teamId) && teamId > 0 ? { teamId } : {}) }),
       });
 
       const result = await response.json();
@@ -43,7 +45,7 @@ export default function NieuweWedstrijdPage() {
         throw new Error(typeof result?.error === "string" ? result.error : "De wedstrijd kon niet worden aangemaakt.");
       }
 
-      router.push("/wedstrijden");
+      router.push(Number.isInteger(teamId) && teamId > 0 ? `/wedstrijden?teamId=${teamId}` : "/wedstrijden");
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "De wedstrijd kon niet worden aangemaakt.");
       setSaving(false);
@@ -54,7 +56,7 @@ export default function NieuweWedstrijdPage() {
     <main className="app-page">
       <div className="app-container max-w-2xl">
         <header className="flex items-center justify-between gap-4">
-          <Link href="/wedstrijden" aria-label="Terug naar wedstrijden"><TeamBadge /></Link>
+          <Link href={Number.isInteger(teamId) && teamId > 0 ? `/wedstrijden?teamId=${teamId}` : "/wedstrijden"} aria-label="Terug naar wedstrijden"><TeamBadge /></Link>
           <Link href="/wedstrijden" className="app-button app-button-secondary">← Wedstrijden</Link>
         </header>
 
