@@ -40,7 +40,7 @@ export default async function WedstrijdDetailPage({ params }: PageProps) {
 
   if (!wedstrijd || wedstrijd.type !== "MATCH") {
     return (
-      <main className="app-page"><div className="app-container max-w-3xl"><div className="app-card p-6"><h1 className="text-2xl font-bold text-[#17211b]">Wedstrijd</h1><p className="mt-2 text-sm text-[#dc2626]">Wedstrijd niet gevonden.</p><div className="mt-6"><Link href="/wedstrijden" className="app-button app-button-secondary">← Terug naar wedstrijden</Link></div></div></div></main>
+      <main className="app-page"><div className="app-container max-w-3xl"><div className="app-card p-6"><h1 className="text-2xl font-bold text-[#17211b]">Wedstrijd</h1><p className="mt-2 text-sm text-[#dc2626]">Wedstrijd niet gevonden.</p><div className="mt-6"><Link href={`/wedstrijden?teamId=${wedstrijd.teamId}`} className="app-button app-button-secondary">← Terug naar wedstrijden</Link></div></div></div></main>
     );
   }
 
