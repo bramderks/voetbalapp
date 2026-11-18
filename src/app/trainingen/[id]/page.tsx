@@ -190,7 +190,7 @@ export default function TrainingDetail({
             <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-6">
               <p className="font-semibold text-red-700">{error ?? "Training niet gevonden."}</p>
             </div>
-            <div className="mt-6"><Link href={training ? `/trainingen?teamId=${training.teamId}` : "/trainingen"} className="app-button app-button-secondary">← Alle trainingen</Link></div>
+            <div className="mt-6"><Link href="/trainingen" className="app-button app-button-secondary">← Alle trainingen</Link></div>
           </div>
         </div>
       </main>
