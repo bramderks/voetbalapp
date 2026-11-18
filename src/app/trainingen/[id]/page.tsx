@@ -155,7 +155,7 @@ export default function TrainingDetail({
       const response = await fetch(`/api/training/${training.id}`, { method: "DELETE" });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error ?? "Training kon niet worden verwijderd.");
-      router.push("/trainingen");
+      router.push(`/trainingen?teamId=${training.teamId}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Training kon niet worden verwijderd.");
@@ -190,7 +190,7 @@ export default function TrainingDetail({
             <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-6">
               <p className="font-semibold text-red-700">{error ?? "Training niet gevonden."}</p>
             </div>
-            <div className="mt-6"><Link href="/trainingen" className="app-button app-button-secondary">← Alle trainingen</Link></div>
+            <div className="mt-6"><Link href={training ? `/trainingen?teamId=${training.teamId}` : "/trainingen"} className="app-button app-button-secondary">← Alle trainingen</Link></div>
           </div>
         </div>
       </main>
