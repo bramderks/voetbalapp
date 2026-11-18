@@ -29,7 +29,7 @@ export default function TeamSelectPage() {
   function chooseTeam(team: Team) {
     window.localStorage.setItem("voetbalapp-team-id", String(team.id));
     window.localStorage.setItem("voetbalapp-team-name", team.name);
-    router.push(`/team/${team.id}/statistieken`);
+    router.push(`/team/${team.id}`);
   }
 
   return (
