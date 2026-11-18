@@ -13,9 +13,12 @@ function formatDate(dateString: string) {
   });
 }
 
-export default async function WedstrijdenPage() {
+export default async function WedstrijdenPage({ searchParams }: { searchParams: Promise<{ teamId?: string }> }) {
+  const params = await searchParams;
+  const parsedTeamId = params.teamId ? Number(params.teamId) : undefined;
+  const teamId = Number.isInteger(parsedTeamId) && parsedTeamId! > 0 ? parsedTeamId : undefined;
   const wedstrijden = await prisma.activity.findMany({
-    where: { type: "MATCH" },
+    where: { type: "MATCH", ...(teamId !== undefined ? { teamId } : {}) },
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
     include: { team: true },
   });
@@ -37,7 +40,7 @@ export default async function WedstrijdenPage() {
         </section>
 
         <section className="mt-8">
-          <Link href="/wedstrijden/nieuw" className="app-button app-button-primary w-full sm:w-auto">+ Nieuwe wedstrijd</Link>
+          <Link href={teamId ? `/wedstrijden/nieuw?teamId=${teamId}` : "/wedstrijden/nieuw"} className="app-button app-button-primary w-full sm:w-auto">+ Nieuwe wedstrijd</Link>
         </section>
 
         <section className="mt-6">
