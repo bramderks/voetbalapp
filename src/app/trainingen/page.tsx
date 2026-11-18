@@ -21,10 +21,14 @@ function formatDate(dateString: string) {
   });
 }
 
-export default async function TrainingenPage() {
+export default async function TrainingenPage({ searchParams }: { searchParams: Promise<{ teamId?: string }> }) {
+  const params = await searchParams;
+  const parsedTeamId = params.teamId ? Number(params.teamId) : undefined;
+  const teamId = Number.isInteger(parsedTeamId) && parsedTeamId! > 0 ? parsedTeamId : undefined;
   const trainingen = await prisma.activity.findMany({
     where: {
       type: "TRAINING",
+      ...(teamId !== undefined ? { teamId } : {}),
     },
     orderBy: [
       {
