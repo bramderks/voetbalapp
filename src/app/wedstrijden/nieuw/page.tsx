@@ -1,14 +1,14 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, use, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TeamBadge from "@/components/TeamBadge";
 
-export default function NieuweWedstrijdPage() {
+export default function NieuweWedstrijdPage({ searchParams }: { searchParams: Promise<{ teamId?: string }> }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const teamId = Number(searchParams.get("teamId"));
+  const params = use(searchParams);
+  const teamId = Number(params.teamId);
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
